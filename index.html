@@ -1,0 +1,999 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="theme-color" content="#14161F">
+<title>Suivi — journal de grossesse</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,400;9..144,600&family=IBM+Plex+Mono:wght@400;500&family=IBM+Plex+Sans:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+:root{
+  --nuit:#14161F;
+  --nuit-2:#1E212D;
+  --nuit-3:#272B39;
+  --creme:#F2EFE6;
+  --brume:#8A8FA3;
+  --ambre:#E8A33D;
+  --sauge:#7FA88A;
+  --corail:#D9614F;
+  --trait:rgba(242,239,230,.10);
+  --r:14px;
+  --sans:"IBM Plex Sans",system-ui,-apple-system,"Segoe UI",sans-serif;
+  --mono:"IBM Plex Mono",ui-monospace,"SF Mono",Menlo,monospace;
+  --serif:"Fraunces",Georgia,serif;
+}
+*{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+html,body{margin:0;padding:0}
+body{
+  background:var(--nuit);color:var(--creme);font-family:var(--sans);
+  font-size:16px;line-height:1.45;
+  padding-bottom:calc(76px + env(safe-area-inset-bottom));
+  -webkit-font-smoothing:antialiased;
+}
+button,input,select,textarea{font:inherit;color:inherit}
+button{cursor:pointer;background:none;border:none}
+:focus-visible{outline:2px solid var(--ambre);outline-offset:3px;border-radius:4px}
+
+/* ---------- structure ---------- */
+.wrap{max-width:680px;margin:0 auto;padding:0 18px}
+header.top{padding:22px 0 14px;display:flex;align-items:baseline;justify-content:space-between;gap:12px}
+.marque{font-family:var(--serif);font-size:22px;font-weight:600;letter-spacing:-.01em}
+.terme{font-family:var(--mono);font-size:12.5px;color:var(--brume);text-align:right;line-height:1.3}
+.terme b{color:var(--creme);font-weight:500}
+
+.vue{display:none;animation:fade .25s ease}
+.vue.actif{display:block}
+@keyframes fade{from{opacity:0;transform:translateY(6px)}to{opacity:1;transform:none}}
+
+h2.titre{font-family:var(--serif);font-size:19px;font-weight:600;margin:26px 0 12px}
+.legende{font-size:12px;text-transform:uppercase;letter-spacing:.09em;color:var(--brume);margin:22px 0 9px;font-weight:500}
+
+.carte{background:var(--nuit-2);border:1px solid var(--trait);border-radius:var(--r);padding:16px}
+
+/* ---------- ruban rythmique (signature) ---------- */
+.ruban{position:relative;height:76px;background:var(--nuit-2);border:1px solid var(--trait);
+  border-radius:var(--r);overflow:hidden;margin-top:4px}
+.ruban .socle{position:absolute;left:0;right:0;bottom:22px;height:1px;background:var(--trait)}
+.ruban .barre{position:absolute;bottom:22px;background:var(--sauge);border-radius:3px 3px 0 0;min-width:3px}
+.ruban .barre.vive{background:var(--ambre);box-shadow:0 0 22px rgba(232,163,61,.5)}
+.ruban .ech{position:absolute;bottom:5px;font-family:var(--mono);font-size:10px;color:var(--brume)}
+.ruban .ech.g{left:10px} .ruban .ech.d{right:10px}
+.ruban .vide{position:absolute;inset:0;display:grid;place-items:center;color:var(--brume);font-size:13.5px}
+
+/* ---------- disque ---------- */
+.disque-zone{display:grid;place-items:center;padding:26px 0 6px}
+.disque{width:210px;height:210px;border-radius:50%;display:grid;place-items:center;
+  background:var(--nuit-2);border:1px solid var(--trait);transition:transform .12s ease;text-align:center}
+.disque:active{transform:scale(.97)}
+.disque.encours{background:radial-gradient(circle at 50% 45%,#3A2C15,#1E212D 70%);
+  border-color:rgba(232,163,61,.45);animation:pulse 3.4s ease-in-out infinite}
+@keyframes pulse{0%,100%{box-shadow:0 0 0 0 rgba(232,163,61,.28)}50%{box-shadow:0 0 0 22px rgba(232,163,61,0)}}
+.disque .chrono{font-family:var(--mono);font-size:44px;font-weight:500;letter-spacing:-.02em;
+  font-variant-numeric:tabular-nums;line-height:1}
+.disque.encours .chrono{color:var(--ambre)}
+.disque .action{font-size:13px;letter-spacing:.07em;text-transform:uppercase;color:var(--brume);margin-top:11px;font-weight:500}
+.disque.encours .action{color:var(--ambre)}
+.disque .repos{font-family:var(--serif);font-size:26px;font-weight:600;padding:0 22px;line-height:1.2}
+
+/* ---------- stats ---------- */
+.trio{display:grid;grid-template-columns:repeat(3,1fr);gap:9px;margin-top:18px}
+.stat{background:var(--nuit-2);border:1px solid var(--trait);border-radius:var(--r);padding:12px 10px;text-align:center}
+.stat .v{font-family:var(--mono);font-size:20px;font-variant-numeric:tabular-nums;line-height:1.15}
+.stat .l{font-size:10.5px;text-transform:uppercase;letter-spacing:.07em;color:var(--brume);margin-top:5px}
+
+/* ---------- bandeau 511 ---------- */
+.jauge{margin-top:12px;background:var(--nuit-2);border:1px solid var(--trait);border-radius:var(--r);padding:14px 16px}
+.jauge .l1{display:flex;justify-content:space-between;align-items:center;gap:10px}
+.jauge .nom{font-size:13.5px;font-weight:500}
+.jauge .etat{font-family:var(--mono);font-size:11.5px;padding:3px 9px;border-radius:99px;
+  background:var(--nuit-3);color:var(--brume);white-space:nowrap}
+.jauge.atteint{border-color:rgba(217,97,79,.5)}
+.jauge.atteint .etat{background:rgba(217,97,79,.16);color:var(--corail)}
+.jauge .l2{font-size:12.5px;color:var(--brume);margin-top:7px;line-height:1.4}
+
+/* ---------- chips ---------- */
+.chips{display:flex;flex-wrap:wrap;gap:8px}
+.chip{background:var(--nuit-2);border:1px solid var(--trait);border-radius:99px;padding:10px 15px;
+  font-size:14px;transition:border-color .15s,background .15s}
+.chip:hover{border-color:rgba(242,239,230,.28)}
+.chip .pt{display:inline-block;width:7px;height:7px;border-radius:50%;margin-right:8px;vertical-align:1px}
+
+/* ---------- liste ---------- */
+.ligne{display:flex;gap:13px;padding:13px 0;border-bottom:1px solid var(--trait);align-items:flex-start}
+.ligne:last-child{border-bottom:none}
+.ligne .h{font-family:var(--mono);font-size:13px;color:var(--brume);width:46px;flex:none;padding-top:2px;font-variant-numeric:tabular-nums}
+.ligne .corps{flex:1;min-width:0}
+.ligne .quoi{font-size:14.5px}
+.ligne .quoi b{font-family:var(--mono);font-weight:500;font-variant-numeric:tabular-nums}
+.ligne .meta{font-size:12.5px;color:var(--brume);margin-top:3px}
+.ligne .sup{color:var(--brume);font-size:19px;line-height:1;padding:2px 4px;flex:none}
+.ligne .sup:hover{color:var(--corail)}
+.alerte{color:var(--corail)}
+
+.rien{color:var(--brume);font-size:14px;padding:26px 4px;text-align:center;line-height:1.5}
+
+/* ---------- calendrier ---------- */
+.cal-tete{display:flex;align-items:center;justify-content:space-between;margin-bottom:12px}
+.cal-tete .mois{font-family:var(--serif);font-size:18px;font-weight:600;text-transform:capitalize}
+.nav{display:flex;gap:6px}
+.nav button{width:38px;height:38px;border-radius:10px;background:var(--nuit-2);border:1px solid var(--trait);font-size:16px}
+.grille{display:grid;grid-template-columns:repeat(7,1fr);gap:5px}
+.jsem{text-align:center;font-size:10.5px;text-transform:uppercase;letter-spacing:.06em;color:var(--brume);padding-bottom:5px}
+.jour{aspect-ratio:1;border-radius:10px;background:var(--nuit-2);border:1px solid var(--trait);
+  display:flex;flex-direction:column;align-items:center;justify-content:center;gap:4px;padding:2px}
+.jour.hors{background:transparent;border-color:transparent;color:var(--nuit-3)}
+.jour.auj{border-color:rgba(232,163,61,.55)}
+.jour.sel{background:var(--creme);color:var(--nuit);border-color:var(--creme)}
+.jour .n{font-family:var(--mono);font-size:13.5px;font-variant-numeric:tabular-nums}
+.jour .pts{display:flex;gap:3px;height:5px}
+.jour .pts i{width:5px;height:5px;border-radius:50%;display:block}
+
+/* ---------- rapport ---------- */
+.periodes{display:flex;gap:7px;flex-wrap:wrap}
+.pill{border:1px solid var(--trait);background:var(--nuit-2);border-radius:99px;padding:8px 14px;font-size:13.5px}
+.pill.on{background:var(--creme);color:var(--nuit);border-color:var(--creme);font-weight:500}
+.synth{display:grid;grid-template-columns:repeat(auto-fit,minmax(158px,1fr));gap:10px}
+.bloc{background:var(--nuit-2);border:1px solid var(--trait);border-radius:var(--r);padding:14px}
+.bloc h3{margin:0 0 9px;font-size:12px;text-transform:uppercase;letter-spacing:.08em;color:var(--brume);font-weight:500}
+.bloc dl{margin:0;display:grid;grid-template-columns:auto 1fr;gap:5px 12px;font-size:13.5px}
+.bloc dt{color:var(--brume)}
+.bloc dd{margin:0;text-align:right;font-family:var(--mono);font-variant-numeric:tabular-nums}
+.tableau{width:100%;border-collapse:collapse;font-size:13px;margin-top:8px}
+.tableau th{text-align:left;font-size:10.5px;text-transform:uppercase;letter-spacing:.07em;color:var(--brume);
+  font-weight:500;padding:8px 9px;border-bottom:1px solid var(--trait);white-space:nowrap}
+.tableau td{padding:9px;border-bottom:1px solid var(--trait);vertical-align:top}
+.tableau td.num{font-family:var(--mono);font-variant-numeric:tabular-nums;white-space:nowrap}
+.defile{overflow-x:auto;-webkit-overflow-scrolling:touch}
+
+/* ---------- boutons ---------- */
+.btn{display:block;width:100%;padding:14px;border-radius:12px;background:var(--nuit-2);
+  border:1px solid var(--trait);font-size:15px;text-align:center;margin-top:9px}
+.btn.fort{background:var(--creme);color:var(--nuit);border-color:var(--creme);font-weight:600}
+.btn.danger{color:var(--corail);border-color:rgba(217,97,79,.35)}
+
+/* ---------- feuille de saisie ---------- */
+.voile{position:fixed;inset:0;background:rgba(10,11,16,.75);backdrop-filter:blur(4px);
+  display:none;align-items:flex-end;justify-content:center;z-index:60}
+.voile.ouvert{display:flex}
+.feuille{background:var(--nuit-2);width:100%;max-width:680px;border-radius:20px 20px 0 0;
+  border-top:1px solid var(--trait);padding:20px 18px calc(24px + env(safe-area-inset-bottom));
+  max-height:90vh;overflow-y:auto;animation:monte .26s cubic-bezier(.2,.8,.3,1)}
+@keyframes monte{from{transform:translateY(100%)}to{transform:none}}
+.feuille h3{font-family:var(--serif);font-size:20px;font-weight:600;margin:0 0 16px}
+label.champ{display:block;margin-bottom:13px}
+label.champ span{display:block;font-size:12px;text-transform:uppercase;letter-spacing:.07em;color:var(--brume);margin-bottom:6px}
+input,textarea,select{width:100%;background:var(--nuit);border:1px solid var(--trait);border-radius:10px;
+  padding:12px;font-size:16px}
+textarea{resize:vertical;min-height:64px;font-family:var(--sans)}
+.duo{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.duo label.champ{margin-bottom:0}
+
+/* ---------- onglets ---------- */
+nav.barre{position:fixed;bottom:0;left:0;right:0;z-index:50;
+  background:rgba(20,22,31,.94);backdrop-filter:blur(14px);border-top:1px solid var(--trait);
+  padding-bottom:env(safe-area-inset-bottom)}
+nav.barre .inner{max-width:680px;margin:0 auto;display:grid;grid-template-columns:repeat(4,1fr)}
+nav.barre button{padding:11px 4px 13px;display:flex;flex-direction:column;align-items:center;gap:5px;
+  color:var(--brume);font-size:10.5px;letter-spacing:.03em}
+nav.barre button svg{width:21px;height:21px;stroke:currentColor;fill:none;stroke-width:1.7;
+  stroke-linecap:round;stroke-linejoin:round}
+nav.barre button.on{color:var(--creme)}
+
+.note-bas{font-size:11.5px;color:var(--brume);line-height:1.5;padding:26px 2px 12px;border-top:1px solid var(--trait);margin-top:30px}
+.avert{background:rgba(217,97,79,.09);border:1px solid rgba(217,97,79,.3);border-radius:12px;
+  padding:12px 14px;font-size:12.5px;color:#F0B5AB;line-height:1.5;margin-top:12px}
+.imprime-seul{display:none}
+
+/* ---------- impression ---------- */
+@media print{
+  body{background:#fff;color:#000;padding:0;font-size:11pt}
+  nav.barre,.periodes,.chips,.btn,.ruban,.disque-zone,.trio,.jauge,header.top .terme{display:none!important}
+  .vue{display:none!important}
+  #vue-rapport{display:block!important}
+  .carte,.bloc,.jauge{background:#fff;border:1px solid #bbb;break-inside:avoid}
+  .tableau th,.tableau td{border-bottom:1px solid #ccc}
+  .bloc dd,.tableau td.num{color:#000}
+  .legende,.bloc h3,.tableau th,.ligne .h,.ligne .meta,.bloc dt{color:#444}
+  .imprime-seul{display:block}
+  .alerte{color:#000;font-weight:700;text-decoration:underline}
+  .defile{overflow:visible}
+}
+@media (prefers-reduced-motion:reduce){*{animation:none!important;transition:none!important}}
+</style>
+</head>
+<body>
+
+<div class="wrap">
+  <header class="top">
+    <div class="marque">Suivi</div>
+    <div class="terme" id="terme"></div>
+  </header>
+
+  <!-- ============ MAINTENANT ============ -->
+  <section class="vue actif" id="vue-maintenant">
+    <div class="legende">Rythme des contractions</div>
+    <div class="ruban" id="ruban"></div>
+
+    <div class="disque-zone">
+      <button class="disque" id="disque" aria-live="polite">
+        <div id="disque-int">
+          <div class="repos">Démarrer<br>la contraction</div>
+        </div>
+      </button>
+    </div>
+
+    <div class="trio">
+      <div class="stat"><div class="v" id="s-derniere">—</div><div class="l">Dernière</div></div>
+      <div class="stat"><div class="v" id="s-interv">—</div><div class="l">Intervalle moy.</div></div>
+      <div class="stat"><div class="v" id="s-heure">—</div><div class="l">Sur 1 h</div></div>
+    </div>
+
+    <div class="jauge" id="jauge511">
+      <div class="l1"><div class="nom">Repère 5-1-1</div><div class="etat" id="e511">—</div></div>
+      <div class="l2">Contractions d'au moins 1 minute, toutes les 5 minutes ou moins, depuis 1 heure. Ce repère varie selon les équipes — demande à ta sage-femme quel seuil elle retient pour toi.</div>
+    </div>
+
+    <div class="legende">Ajouter une mesure</div>
+    <div class="chips" id="chips"></div>
+
+    <div class="legende">Aujourd'hui</div>
+    <div class="carte" id="liste-jour"></div>
+  </section>
+
+  <!-- ============ AGENDA ============ -->
+  <section class="vue" id="vue-agenda">
+    <div class="cal-tete">
+      <div class="mois" id="cal-mois"></div>
+      <div class="nav">
+        <button id="cal-prec" aria-label="Mois précédent">‹</button>
+        <button id="cal-auj" aria-label="Revenir à aujourd'hui" style="width:auto;padding:0 14px;font-size:13px">Auj.</button>
+        <button id="cal-suiv" aria-label="Mois suivant">›</button>
+      </div>
+    </div>
+    <div class="grille" id="cal-sem"></div>
+    <div class="grille" id="cal-grille" style="margin-top:5px"></div>
+
+    <h2 class="titre" id="jour-titre">Journée</h2>
+    <div class="carte" id="jour-detail"></div>
+
+    <div class="legende">Légende</div>
+    <div class="chips" id="legende-couleurs"></div>
+  </section>
+
+  <!-- ============ RAPPORT ============ -->
+  <section class="vue" id="vue-rapport">
+    <h2 class="titre">Rapport médical</h2>
+    <div class="imprime-seul" id="entete-impression"></div>
+
+    <div class="legende">Période</div>
+    <div class="periodes" id="periodes"></div>
+
+    <div class="legende">Catégories affichées</div>
+    <div class="chips" id="filtres"></div>
+
+    <div class="legende">Synthèse</div>
+    <div class="synth" id="synthese"></div>
+
+    <div class="legende">Tous les événements</div>
+    <div class="defile"><table class="tableau" id="tab-evts"></table></div>
+
+    <button class="btn fort" id="btn-imprimer" style="margin-top:18px">Imprimer / enregistrer en PDF</button>
+    <div class="note-bas">Ce journal est un carnet de notes personnel. Ce n'est pas un dispositif médical : aucune valeur affichée ici ne remplace un avis, un examen ou un monitoring. En cas de doute, de saignement, de perte de liquide, de douleur inhabituelle, de baisse des mouvements du bébé ou de tension élevée, contacte ta sage-femme, ta maternité ou le 15.</div>
+  </section>
+
+  <!-- ============ DONNÉES ============ -->
+  <section class="vue" id="vue-donnees">
+    <h2 class="titre">Données</h2>
+
+    <div class="carte">
+      <label class="champ"><span>Date du terme prévu</span>
+        <input type="date" id="in-terme">
+      </label>
+      <label class="champ" style="margin-bottom:0"><span>Prénom (en-tête du rapport)</span>
+        <input type="text" id="in-prenom" placeholder="Facultatif">
+      </label>
+    </div>
+
+    <div class="legende">Sauvegarde</div>
+    <div class="carte">
+      <div style="font-size:13.5px;color:var(--brume);line-height:1.5" id="etat-stockage"></div>
+      <button class="btn" id="btn-json">Exporter en JSON (sauvegarde complète)</button>
+      <button class="btn" id="btn-csv">Exporter en CSV (tableur)</button>
+      <button class="btn" id="btn-import">Restaurer depuis un fichier JSON</button>
+      <input type="file" id="fichier" accept="application/json,.json" hidden>
+    </div>
+
+    <div class="legende">Zone sensible</div>
+    <button class="btn danger" id="btn-vider">Effacer toutes les données</button>
+
+    <div class="avert" id="avert-stockage" hidden></div>
+
+    <div class="note-bas">Les données restent sur cet appareil, dans ce navigateur. Rien n'est envoyé nulle part, personne d'autre n'y a accès. En contrepartie, vider l'historique du navigateur ou changer de téléphone les efface : exporte le JSON de temps en temps, et avant chaque rendez-vous.</div>
+  </section>
+</div>
+
+<!-- feuille de saisie -->
+<div class="voile" id="voile">
+  <div class="feuille" role="dialog" aria-modal="true" aria-labelledby="f-titre">
+    <h3 id="f-titre">Mesure</h3>
+    <div id="f-champs"></div>
+    <label class="champ"><span>Date et heure</span><input type="datetime-local" id="f-quand"></label>
+    <label class="champ"><span>Note</span><textarea id="f-note" placeholder="Contexte, ressenti, position…"></textarea></label>
+    <button class="btn fort" id="f-ok">Enregistrer</button>
+    <button class="btn" id="f-annul">Annuler</button>
+  </div>
+</div>
+
+<nav class="barre">
+  <div class="inner">
+    <button data-vue="maintenant" class="on">
+      <svg viewBox="0 0 24 24"><circle cx="12" cy="13" r="8"/><path d="M12 9v4l2.5 2M9 2h6"/></svg>Maintenant</button>
+    <button data-vue="agenda">
+      <svg viewBox="0 0 24 24"><rect x="3" y="5" width="18" height="16" rx="2"/><path d="M3 10h18M8 3v4M16 3v4"/></svg>Agenda</button>
+    <button data-vue="rapport">
+      <svg viewBox="0 0 24 24"><path d="M5 3h14v18H5z"/><path d="M9 8h6M9 12h6M9 16h3"/></svg>Rapport</button>
+    <button data-vue="donnees">
+      <svg viewBox="0 0 24 24"><ellipse cx="12" cy="6" rx="8" ry="3"/><path d="M4 6v12c0 1.7 3.6 3 8 3s8-1.3 8-3V6M4 12c0 1.7 3.6 3 8 3s8-1.3 8-3"/></svg>Données</button>
+  </div>
+</nav>
+
+<script>
+"use strict";
+
+/* ===================== stockage ===================== */
+const CLE = "suivi-grossesse-v1";
+let stockageOk = true;
+let memoire = null;
+
+function lire(){
+  try{
+    const t = localStorage.getItem(CLE);
+    return t ? JSON.parse(t) : null;
+  }catch(e){
+    stockageOk = false;
+    return memoire;
+  }
+}
+function ecrire(o){
+  memoire = o;
+  try{ localStorage.setItem(CLE, JSON.stringify(o)); }
+  catch(e){ stockageOk = false; }
+}
+
+const vide = { contractions:[], mesures:[], terme:"", prenom:"", encours:null };
+let S = Object.assign({}, vide, lire() || {});
+S.contractions = S.contractions || [];
+S.mesures = S.mesures || [];
+const save = () => ecrire(S);
+const uid = () => Date.now().toString(36) + Math.random().toString(36).slice(2,7);
+
+/* ===================== catégories ===================== */
+const CATS = {
+  contraction:{nom:"Contraction", coul:"#7FA88A"},
+  tension:    {nom:"Tension",     coul:"#6E9BD1"},
+  poids:      {nom:"Poids",       coul:"#C99BD8"},
+  temperature:{nom:"Température", coul:"#E8A33D"},
+  glycemie:   {nom:"Glycémie",    coul:"#D98F6B"},
+  mouvements: {nom:"Mouvements",  coul:"#8ED0C4"},
+  symptome:   {nom:"Symptôme",    coul:"#D9614F"}
+};
+
+/* ===================== formats ===================== */
+const p2 = n => String(n).padStart(2,"0");
+function duree(s){
+  s = Math.max(0, Math.round(s));
+  return p2(Math.floor(s/60)) + ":" + p2(s%60);
+}
+function dureeCourte(s){
+  s = Math.round(s);
+  if(s < 60) return s + " s";
+  const m = Math.floor(s/60), r = s%60;
+  return r ? m+" min "+r+" s" : m+" min";
+}
+function ecart(ms){
+  const m = Math.round(ms/60000);
+  if(m < 60) return m + " min";
+  return Math.floor(m/60) + " h " + p2(m%60);
+}
+const heure = d => p2(d.getHours()) + ":" + p2(d.getMinutes());
+const jourCle = d => d.getFullYear()+"-"+p2(d.getMonth()+1)+"-"+p2(d.getDate());
+const dateLongue = d => d.toLocaleDateString("fr-FR",{weekday:"long",day:"numeric",month:"long"});
+const dateCourte = d => p2(d.getDate())+"/"+p2(d.getMonth()+1)+"/"+d.getFullYear();
+
+function pourInput(d){
+  return d.getFullYear()+"-"+p2(d.getMonth()+1)+"-"+p2(d.getDate())+"T"+p2(d.getHours())+":"+p2(d.getMinutes());
+}
+
+/* ===================== événements unifiés ===================== */
+function tousEvenements(){
+  const out = [];
+  const cs = S.contractions.slice().sort((a,b)=>new Date(a.debut)-new Date(b.debut));
+  cs.forEach((c,i)=>{
+    const d = new Date(c.debut);
+    out.push({
+      id:c.id, type:"contraction", at:d,
+      valeur: dureeCourte(c.secondes),
+      duree: c.secondes,
+      interv: i>0 ? (d - new Date(cs[i-1].debut)) : null,
+      note: c.note || "",
+      alerte: false
+    });
+  });
+  S.mesures.forEach(m=>{
+    const d = new Date(m.at);
+    out.push({
+      id:m.id, type:m.type, at:d,
+      valeur: valeurTexte(m),
+      duree:null, interv:null,
+      note: m.note || "",
+      alerte: estAlerte(m)
+    });
+  });
+  return out.sort((a,b)=>b.at - a.at);
+}
+
+function valeurTexte(m){
+  const v = m.v || {};
+  switch(m.type){
+    case "tension": return v.sys+"/"+v.dia+" mmHg" + (v.pouls ? " · "+v.pouls+" bpm" : "");
+    case "poids": return v.kg + " kg";
+    case "temperature": return v.c + " °C";
+    case "glycemie": return v.gl + " g/L";
+    case "mouvements": return v.n + " mouvement" + (v.n>1?"s":"") + (v.min ? " en "+v.min+" min" : "");
+    case "symptome": return v.txt || "—";
+    default: return "—";
+  }
+}
+function estAlerte(m){
+  const v = m.v || {};
+  if(m.type === "tension") return (+v.sys >= 140) || (+v.dia >= 90);
+  if(m.type === "temperature") return (+v.c >= 38);
+  return false;
+}
+
+/* ===================== chrono ===================== */
+const $ = s => document.querySelector(s);
+const disque = $("#disque");
+let tic = null;
+
+function basculer(){
+  if(S.encours){
+    const d0 = new Date(S.encours);
+    const sec = Math.round((Date.now() - d0)/1000);
+    if(sec >= 3){
+      S.contractions.push({id:uid(), debut:S.encours, secondes:sec, note:""});
+    }
+    S.encours = null;
+    clearInterval(tic); tic = null;
+    if(navigator.vibrate) navigator.vibrate([30,60,30]);
+  }else{
+    S.encours = new Date().toISOString();
+    tic = setInterval(peindreChrono, 250);
+    if(navigator.vibrate) navigator.vibrate(30);
+  }
+  save(); toutPeindre();
+}
+disque.addEventListener("click", basculer);
+
+function peindreChrono(){
+  const int = $("#disque-int");
+  if(S.encours){
+    const sec = (Date.now() - new Date(S.encours))/1000;
+    disque.classList.add("encours");
+    int.innerHTML = '<div class="chrono">'+duree(sec)+'</div><div class="action">Arrêter</div>';
+    peindreRuban();
+  }else{
+    disque.classList.remove("encours");
+    int.innerHTML = '<div class="repos">Démarrer<br>la contraction</div>';
+  }
+}
+
+/* ===================== ruban ===================== */
+function peindreRuban(){
+  const r = $("#ruban");
+  const cs = S.contractions.slice().sort((a,b)=>new Date(a.debut)-new Date(b.debut)).slice(-10);
+  if(!cs.length && !S.encours){
+    r.innerHTML = '<div class="vide">Le rythme apparaîtra ici dès la première contraction.</div>';
+    return;
+  }
+  const maintenant = Date.now();
+  let t0 = cs.length ? new Date(cs[0].debut).getTime() : maintenant;
+  if(S.encours) t0 = Math.min(t0, new Date(S.encours).getTime());
+  let span = maintenant - t0;
+  if(span < 10*60000) { t0 = maintenant - 10*60000; span = 10*60000; }
+  span *= 1.03;
+
+  const maxD = Math.max(90, ...cs.map(c=>c.secondes));
+  let h = '<div class="socle"></div>';
+
+  const barre = (debut, sec, vive) => {
+    const g = ((debut - t0)/span)*100;
+    const w = Math.max(0.9, ((sec*1000)/span)*100);
+    const ht = 8 + Math.min(1, sec/maxD)*40;
+    return '<div class="barre'+(vive?' vive':'')+'" style="left:'+g.toFixed(2)+'%;width:'+w.toFixed(2)+'%;height:'+ht.toFixed(0)+'px"></div>';
+  };
+
+  cs.forEach(c => h += barre(new Date(c.debut).getTime(), c.secondes, false));
+  if(S.encours){
+    const d0 = new Date(S.encours).getTime();
+    h += barre(d0, (maintenant-d0)/1000, true);
+  }
+  h += '<div class="ech g">il y a '+ecart(maintenant-t0)+'</div><div class="ech d">maintenant</div>';
+  r.innerHTML = h;
+}
+
+/* ===================== stats ===================== */
+function peindreStats(){
+  const cs = S.contractions.slice().sort((a,b)=>new Date(a.debut)-new Date(b.debut));
+  const der = cs[cs.length-1];
+  $("#s-derniere").textContent = der ? dureeCourte(der.secondes) : "—";
+
+  const trois = cs.slice(-4);
+  if(trois.length >= 2){
+    let t = 0;
+    for(let i=1;i<trois.length;i++) t += new Date(trois[i].debut) - new Date(trois[i-1].debut);
+    $("#s-interv").textContent = ecart(t/(trois.length-1));
+  } else $("#s-interv").textContent = "—";
+
+  const lim = Date.now() - 3600000;
+  const nb = cs.filter(c=>new Date(c.debut) >= lim).length;
+  $("#s-heure").textContent = nb ? nb + (nb>1?" contr.":" contr.") : "0";
+
+  // repère 5-1-1
+  const h1 = cs.filter(c=>new Date(c.debut) >= lim);
+  const j = $("#jauge511"), e = $("#e511");
+  if(h1.length < 3){
+    j.classList.remove("atteint"); e.textContent = "Pas encore assez de données";
+  }else{
+    const longues = h1.every(c=>c.secondes >= 55);
+    let ok = true;
+    for(let i=1;i<h1.length;i++){
+      if((new Date(h1[i].debut) - new Date(h1[i-1].debut)) > 5.5*60000) ok = false;
+    }
+    const couvre = (new Date(h1[h1.length-1].debut) - new Date(h1[0].debut)) >= 50*60000;
+    if(longues && ok && couvre){
+      j.classList.add("atteint"); e.textContent = "Repère atteint — appelle";
+    }else{
+      j.classList.remove("atteint");
+      e.textContent = h1.length + " contr. sur 1 h";
+    }
+  }
+}
+
+/* ===================== terme / SA ===================== */
+function peindreTerme(){
+  const t = $("#terme");
+  if(!S.terme){ t.innerHTML = '<span style="opacity:.6">Terme non renseigné</span>'; return; }
+  const terme = new Date(S.terme + "T12:00:00");
+  const ddr = new Date(terme.getTime() - 280*86400000);
+  const j = Math.floor((Date.now() - ddr)/86400000);
+  const sa = Math.floor(j/7), rj = j%7;
+  const reste = Math.ceil((terme - Date.now())/86400000);
+  if(j < 0 || sa > 45){ t.innerHTML = '<span style="opacity:.6">Terme : '+dateCourte(terme)+'</span>'; return; }
+  t.innerHTML = "<b>"+sa+" SA"+(rj?" + "+rj+" j":"")+"</b><br>"+
+    (reste >= 0 ? "terme dans "+reste+" j" : "terme dépassé de "+(-reste)+" j");
+}
+
+/* ===================== liste ===================== */
+function ligneHTML(e){
+  const c = CATS[e.type] || {nom:e.type, coul:"#8A8FA3"};
+  let meta = [];
+  if(e.interv != null) meta.push("intervalle "+ecart(e.interv));
+  if(e.note) meta.push(e.note);
+  return '<div class="ligne">'+
+    '<div class="h">'+heure(e.at)+'</div>'+
+    '<div class="corps">'+
+      '<div class="quoi"><span style="color:'+c.coul+'">'+c.nom+'</span> · <b'+(e.alerte?' class="alerte"':'')+'>'+e.valeur+'</b></div>'+
+      (meta.length ? '<div class="meta">'+meta.join(" · ")+'</div>' : '')+
+    '</div>'+
+    '<button class="sup" data-sup="'+e.id+'" data-t="'+e.type+'" aria-label="Supprimer">×</button>'+
+  '</div>';
+}
+
+function peindreJour(){
+  const auj = jourCle(new Date());
+  const evts = tousEvenements().filter(e=>jourCle(e.at) === auj);
+  $("#liste-jour").innerHTML = evts.length
+    ? evts.map(ligneHTML).join("")
+    : '<div class="rien">Rien de noté aujourd\'hui.<br>Le premier geste, c\'est le grand cercle au-dessus.</div>';
+}
+
+document.addEventListener("click", ev=>{
+  const b = ev.target.closest("[data-sup]");
+  if(!b) return;
+  const id = b.dataset.sup;
+  if(b.dataset.t === "contraction") S.contractions = S.contractions.filter(x=>x.id!==id);
+  else S.mesures = S.mesures.filter(x=>x.id!==id);
+  save(); toutPeindre();
+});
+
+/* ===================== chips de saisie ===================== */
+const SAISIES = {
+  tension:{titre:"Tension artérielle", champs:[
+    {k:"sys", l:"Systolique (haut)", t:"number", ph:"120", req:1},
+    {k:"dia", l:"Diastolique (bas)", t:"number", ph:"75", req:1},
+    {k:"pouls", l:"Pouls (bpm)", t:"number", ph:"80"}
+  ]},
+  poids:{titre:"Poids", champs:[{k:"kg", l:"Kilos", t:"number", pas:"0.1", ph:"64.5", req:1}]},
+  temperature:{titre:"Température", champs:[{k:"c", l:"Degrés", t:"number", pas:"0.1", ph:"37.0", req:1}]},
+  glycemie:{titre:"Glycémie", champs:[{k:"gl", l:"g/L", t:"number", pas:"0.01", ph:"0.90", req:1}]},
+  mouvements:{titre:"Mouvements du bébé", champs:[
+    {k:"n", l:"Nombre ressenti", t:"number", ph:"10", req:1},
+    {k:"min", l:"Sur combien de minutes", t:"number", ph:"120"}
+  ]},
+  symptome:{titre:"Symptôme", champs:[{k:"txt", l:"Lequel", t:"text", ph:"Nausées, jambes lourdes…", req:1}]}
+};
+
+$("#chips").innerHTML = Object.keys(SAISIES).map(k=>
+  '<button class="chip" data-saisie="'+k+'"><span class="pt" style="background:'+CATS[k].coul+'"></span>'+CATS[k].nom+'</button>'
+).join("");
+
+$("#legende-couleurs").innerHTML = Object.keys(CATS).map(k=>
+  '<span class="chip" style="cursor:default"><span class="pt" style="background:'+CATS[k].coul+'"></span>'+CATS[k].nom+'</span>'
+).join("");
+
+let saisieActive = null;
+document.addEventListener("click", ev=>{
+  const b = ev.target.closest("[data-saisie]");
+  if(!b) return;
+  ouvrirSaisie(b.dataset.saisie);
+});
+
+function ouvrirSaisie(type){
+  saisieActive = type;
+  const d = SAISIES[type];
+  $("#f-titre").textContent = d.titre;
+  let h = "";
+  if(type === "tension"){
+    h = '<div class="duo">'+d.champs.slice(0,2).map(champHTML).join("")+'</div>'+
+        '<div style="height:13px"></div>'+ champHTML(d.champs[2]);
+  }else if(type === "mouvements"){
+    h = '<div class="duo">'+d.champs.map(champHTML).join("")+'</div><div style="height:13px"></div>';
+  }else{
+    h = d.champs.map(champHTML).join("");
+  }
+  $("#f-champs").innerHTML = h;
+  $("#f-quand").value = pourInput(new Date());
+  $("#f-note").value = "";
+  $("#voile").classList.add("ouvert");
+  const p = $("#f-champs input"); if(p) setTimeout(()=>p.focus(), 120);
+}
+function champHTML(c){
+  return '<label class="champ"><span>'+c.l+'</span><input type="'+c.t+'" id="c-'+c.k+'"'+
+    (c.pas?' step="'+c.pas+'"':'')+(c.t==="number"?' inputmode="decimal"':'')+
+    ' placeholder="'+(c.ph||"")+'"></label>';
+}
+function fermerSaisie(){ $("#voile").classList.remove("ouvert"); saisieActive = null; }
+$("#f-annul").addEventListener("click", fermerSaisie);
+$("#voile").addEventListener("click", e=>{ if(e.target.id === "voile") fermerSaisie(); });
+
+$("#f-ok").addEventListener("click", ()=>{
+  const d = SAISIES[saisieActive];
+  const v = {};
+  for(const c of d.champs){
+    const el = $("#c-"+c.k);
+    const val = el ? el.value.trim() : "";
+    if(c.req && !val){ el.focus(); el.style.borderColor = "var(--corail)"; return; }
+    if(val !== "") v[c.k] = c.t === "number" ? Number(val.replace(",", ".")) : val;
+  }
+  const q = $("#f-quand").value;
+  S.mesures.push({
+    id: uid(),
+    type: saisieActive,
+    at: (q ? new Date(q) : new Date()).toISOString(),
+    v: v,
+    note: $("#f-note").value.trim()
+  });
+  save(); fermerSaisie(); toutPeindre();
+});
+
+/* ===================== agenda ===================== */
+let curseur = new Date(); curseur.setDate(1);
+let jourSel = jourCle(new Date());
+
+$("#cal-sem").innerHTML = ["lun","mar","mer","jeu","ven","sam","dim"]
+  .map(j=>'<div class="jsem">'+j+'</div>').join("");
+
+function peindreCalendrier(){
+  $("#cal-mois").textContent = curseur.toLocaleDateString("fr-FR",{month:"long",year:"numeric"});
+  const an = curseur.getFullYear(), mo = curseur.getMonth();
+  const prem = new Date(an, mo, 1);
+  let decal = (prem.getDay() + 6) % 7;
+  const nbJours = new Date(an, mo+1, 0).getDate();
+
+  const parJour = {};
+  tousEvenements().forEach(e=>{
+    const k = jourCle(e.at);
+    (parJour[k] = parJour[k] || []).push(e);
+  });
+
+  let h = "";
+  for(let i=0;i<decal;i++) h += '<div class="jour hors"></div>';
+  const ajk = jourCle(new Date());
+  for(let d=1; d<=nbJours; d++){
+    const dt = new Date(an, mo, d);
+    const k = jourCle(dt);
+    const evts = parJour[k] || [];
+    const types = [...new Set(evts.map(e=>e.type))].slice(0,4);
+    const cls = ["jour"];
+    if(k === ajk) cls.push("auj");
+    if(k === jourSel) cls.push("sel");
+    h += '<button class="'+cls.join(" ")+'" data-jour="'+k+'">'+
+      '<span class="n">'+d+'</span>'+
+      '<span class="pts">'+types.map(t=>'<i style="background:'+(CATS[t]?CATS[t].coul:"#888")+'"></i>').join("")+'</span>'+
+    '</button>';
+  }
+  $("#cal-grille").innerHTML = h;
+  peindreJourSel();
+}
+
+function peindreJourSel(){
+  const evts = tousEvenements().filter(e=>jourCle(e.at) === jourSel).reverse();
+  const d = new Date(jourSel + "T12:00:00");
+  $("#jour-titre").textContent = dateLongue(d).replace(/^./, c=>c.toUpperCase());
+  const cs = evts.filter(e=>e.type === "contraction");
+  let entete = "";
+  if(cs.length){
+    const tot = cs.reduce((a,e)=>a+e.duree, 0);
+    entete = '<div class="meta" style="padding-bottom:12px;border-bottom:1px solid var(--trait);margin-bottom:4px;color:var(--brume);font-size:12.5px">'+
+      cs.length+' contraction'+(cs.length>1?'s':'')+' · durée totale '+dureeCourte(tot)+' · moyenne '+dureeCourte(tot/cs.length)+'</div>';
+  }
+  $("#jour-detail").innerHTML = evts.length
+    ? entete + evts.map(ligneHTML).join("")
+    : '<div class="rien">Aucune mesure ce jour-là.</div>';
+}
+
+document.addEventListener("click", ev=>{
+  const b = ev.target.closest("[data-jour]");
+  if(!b) return;
+  jourSel = b.dataset.jour;
+  peindreCalendrier();
+});
+$("#cal-prec").addEventListener("click", ()=>{ curseur.setMonth(curseur.getMonth()-1); peindreCalendrier(); });
+$("#cal-suiv").addEventListener("click", ()=>{ curseur.setMonth(curseur.getMonth()+1); peindreCalendrier(); });
+$("#cal-auj").addEventListener("click", ()=>{
+  curseur = new Date(); curseur.setDate(1);
+  jourSel = jourCle(new Date()); peindreCalendrier();
+});
+
+/* ===================== rapport ===================== */
+let periode = 7;
+let actifs = new Set(Object.keys(CATS));
+
+const PERIODES = [{v:1,l:"24 h"},{v:7,l:"7 jours"},{v:30,l:"30 jours"},{v:90,l:"3 mois"},{v:0,l:"Tout"}];
+$("#periodes").innerHTML = PERIODES.map(p=>
+  '<button class="pill'+(p.v===periode?" on":"")+'" data-per="'+p.v+'">'+p.l+'</button>').join("");
+
+$("#filtres").innerHTML = Object.keys(CATS).map(k=>
+  '<button class="chip" data-filtre="'+k+'"><span class="pt" style="background:'+CATS[k].coul+'"></span>'+CATS[k].nom+'</button>').join("");
+
+document.addEventListener("click", ev=>{
+  const p = ev.target.closest("[data-per]");
+  if(p){
+    periode = +p.dataset.per;
+    document.querySelectorAll("[data-per]").forEach(x=>x.classList.toggle("on", +x.dataset.per === periode));
+    peindreRapport(); return;
+  }
+  const f = ev.target.closest("[data-filtre]");
+  if(f){
+    const k = f.dataset.filtre;
+    actifs.has(k) ? actifs.delete(k) : actifs.add(k);
+    majFiltres(); peindreRapport();
+  }
+});
+function majFiltres(){
+  document.querySelectorAll("[data-filtre]").forEach(el=>{
+    const on = actifs.has(el.dataset.filtre);
+    el.style.opacity = on ? "1" : ".38";
+    el.style.borderColor = on ? "rgba(242,239,230,.28)" : "var(--trait)";
+  });
+}
+
+function evtsRapport(){
+  const lim = periode ? Date.now() - periode*86400000 : 0;
+  return tousEvenements().filter(e=>actifs.has(e.type) && e.at.getTime() >= lim);
+}
+
+function peindreRapport(){
+  const evts = evtsRapport();
+  const nom = S.prenom ? S.prenom : "Journal de suivi";
+  const per = PERIODES.find(p=>p.v===periode);
+  $("#entete-impression").innerHTML =
+    '<div style="font-family:var(--serif);font-size:17pt;margin-bottom:2px">'+nom+'</div>'+
+    '<div style="font-size:10pt;color:#444;margin-bottom:14px">Période : '+per.l+
+    ' — édité le '+dateCourte(new Date())+' à '+heure(new Date())+
+    (S.terme ? ' — terme prévu le '+dateCourte(new Date(S.terme+"T12:00:00")) : '')+'</div>';
+
+  /* --- synthèse --- */
+  const par = {};
+  evts.forEach(e=>(par[e.type] = par[e.type] || []).push(e));
+  const blocs = [];
+
+  if(par.contraction){
+    const c = par.contraction, ds = c.map(x=>x.duree);
+    const ivs = c.map(x=>x.interv).filter(x=>x!=null && x < 6*3600000);
+    const moy = a => a.reduce((s,x)=>s+x,0)/a.length;
+    blocs.push(bloc("Contractions", [
+      ["Nombre", c.length],
+      ["Durée moy.", dureeCourte(moy(ds))],
+      ["Durée max.", dureeCourte(Math.max(...ds))],
+      ["Durée min.", dureeCourte(Math.min(...ds))],
+      ivs.length ? ["Intervalle moy.", ecart(moy(ivs))] : null,
+      ivs.length ? ["Intervalle min.", ecart(Math.min(...ivs))] : null
+    ]));
+  }
+  if(par.tension){
+    const t = par.tension.map(e=>S.mesures.find(m=>m.id===e.id).v);
+    const moy = k => Math.round(t.reduce((s,x)=>s+ +x[k],0)/t.length);
+    const nAl = par.tension.filter(e=>e.alerte).length;
+    blocs.push(bloc("Tension artérielle", [
+      ["Relevés", t.length],
+      ["Moyenne", moy("sys")+"/"+moy("dia")],
+      ["Systolique max.", Math.max(...t.map(x=>+x.sys))],
+      ["Diastolique max.", Math.max(...t.map(x=>+x.dia))],
+      ["≥ 140 ou ≥ 90", nAl]
+    ], nAl>0));
+  }
+  if(par.poids){
+    const w = par.poids.map(e=>+S.mesures.find(m=>m.id===e.id).v.kg);
+    const chrono = par.poids.slice().reverse();
+    const d1 = +S.mesures.find(m=>m.id===chrono[0].id).v.kg;
+    const d2 = +S.mesures.find(m=>m.id===chrono[chrono.length-1].id).v.kg;
+    const dl = (d2-d1);
+    blocs.push(bloc("Poids", [
+      ["Relevés", w.length],
+      ["Dernier", d2.toFixed(1)+" kg"],
+      ["Min.", Math.min(...w).toFixed(1)+" kg"],
+      ["Max.", Math.max(...w).toFixed(1)+" kg"],
+      ["Évolution", (dl>=0?"+":"")+dl.toFixed(1)+" kg"]
+    ]));
+  }
+  if(par.temperature){
+    const t = par.temperature.map(e=>+S.mesures.find(m=>m.id===e.id).v.c);
+    const nAl = par.temperature.filter(e=>e.alerte).length;
+    blocs.push(bloc("Température", [
+      ["Relevés", t.length],
+      ["Moyenne", (t.reduce((s,x)=>s+x,0)/t.length).toFixed(1)+" °C"],
+      ["Max.", Math.max(...t).toFixed(1)+" °C"],
+      ["≥ 38 °C", nAl]
+    ], nAl>0));
+  }
+  if(par.glycemie){
+    const g = par.glycemie.map(e=>+S.mesures.find(m=>m.id===e.id).v.gl);
+    blocs.push(bloc("Glycémie", [
+      ["Relevés", g.length],
+      ["Moyenne", (g.reduce((s,x)=>s+x,0)/g.length).toFixed(2)+" g/L"],
+      ["Min.", Math.min(...g).toFixed(2)],
+      ["Max.", Math.max(...g).toFixed(2)]
+    ]));
+  }
+  if(par.mouvements){
+    const n = par.mouvements.map(e=>+S.mesures.find(m=>m.id===e.id).v.n);
+    blocs.push(bloc("Mouvements", [
+      ["Comptages", n.length],
+      ["Moyenne", Math.round(n.reduce((s,x)=>s+x,0)/n.length)],
+      ["Min.", Math.min(...n)],
+      ["Max.", Math.max(...n)]
+    ]));
+  }
+  if(par.symptome){
+    blocs.push(bloc("Symptômes", [["Signalements", par.symptome.length]]));
+  }
+
+  $("#synthese").innerHTML = blocs.length ? blocs.join("")
+    : '<div class="rien" style="grid-column:1/-1">Aucune mesure sur cette période avec ces filtres.</div>';
+
+  /* --- tableau --- */
+  const t = $("#tab-evts");
+  if(!evts.length){ t.innerHTML = ""; return; }
+  t.innerHTML =
+    '<thead><tr><th>Date</th><th>Heure</th><th>Catégorie</th><th>Valeur</th><th>Durée</th><th>Intervalle</th><th>Note</th></tr></thead>'+
+    '<tbody>' + evts.map(e=>
+      '<tr>'+
+        '<td class="num">'+dateCourte(e.at)+'</td>'+
+        '<td class="num">'+heure(e.at)+'</td>'+
+        '<td>'+CATS[e.type].nom+'</td>'+
+        '<td class="num'+(e.alerte?' alerte':'')+'">'+e.valeur+'</td>'+
+        '<td class="num">'+(e.duree!=null ? dureeCourte(e.duree) : "—")+'</td>'+
+        '<td class="num">'+(e.interv!=null ? ecart(e.interv) : "—")+'</td>'+
+        '<td>'+(e.note || "—")+'</td>'+
+      '</tr>').join("") + '</tbody>';
+}
+
+function bloc(titre, paires, alerte){
+  const dl = paires.filter(Boolean).map(p=>'<dt>'+p[0]+'</dt><dd>'+p[1]+'</dd>').join("");
+  return '<div class="bloc"'+(alerte?' style="border-color:rgba(217,97,79,.45)"':'')+'>'+
+    '<h3>'+titre+'</h3><dl>'+dl+'</dl></div>';
+}
+
+$("#btn-imprimer").addEventListener("click", ()=>window.print());
+
+/* ===================== données ===================== */
+$("#in-terme").value = S.terme || "";
+$("#in-prenom").value = S.prenom || "";
+$("#in-terme").addEventListener("change", e=>{ S.terme = e.target.value; save(); peindreTerme(); });
+$("#in-prenom").addEventListener("input", e=>{ S.prenom = e.target.value; save(); });
+
+function telecharger(nom, contenu, mime){
+  const b = new Blob([contenu], {type:mime});
+  const u = URL.createObjectURL(b);
+  const a = document.createElement("a");
+  a.href = u; a.download = nom; a.click();
+  setTimeout(()=>URL.revokeObjectURL(u), 1500);
+}
+const horodatage = () => { const d = new Date(); return d.getFullYear()+p2(d.getMonth()+1)+p2(d.getDate())+"-"+p2(d.getHours())+p2(d.getMinutes()); };
+
+$("#btn-json").addEventListener("click", ()=>{
+  telecharger("suivi-grossesse-"+horodatage()+".json", JSON.stringify(S, null, 2), "application/json");
+});
+$("#btn-csv").addEventListener("click", ()=>{
+  const q = v => '"' + String(v==null?"":v).replace(/"/g,'""') + '"';
+  const l = [["Date","Heure","Categorie","Valeur","Duree (s)","Intervalle (min)","Note"].map(q).join(";")];
+  tousEvenements().slice().reverse().forEach(e=>{
+    l.push([dateCourte(e.at), heure(e.at), CATS[e.type].nom, e.valeur,
+      e.duree!=null?e.duree:"", e.interv!=null?Math.round(e.interv/60000):"", e.note].map(q).join(";"));
+  });
+  telecharger("suivi-grossesse-"+horodatage()+".csv", "\uFEFF"+l.join("\r\n"), "text/csv;charset=utf-8");
+});
+$("#btn-import").addEventListener("click", ()=>$("#fichier").click());
+$("#fichier").addEventListener("change", e=>{
+  const f = e.target.files[0]; if(!f) return;
+  const r = new FileReader();
+  r.onload = () => {
+    try{
+      const o = JSON.parse(r.result);
+      if(!o || !Array.isArray(o.contractions)) throw 0;
+      if(!confirm("Remplacer les données actuelles par celles du fichier ?")) return;
+      S = Object.assign({}, vide, o);
+      S.encours = null;
+      save(); location.reload();
+    }catch(x){ alert("Ce fichier n'est pas une sauvegarde valide. Choisis un fichier JSON exporté depuis cette application."); }
+  };
+  r.readAsText(f);
+  e.target.value = "";
+});
+$("#btn-vider").addEventListener("click", ()=>{
+  if(!confirm("Tout effacer définitivement ? Exporte d'abord le JSON si tu veux garder une trace.")) return;
+  if(!confirm("Dernière confirmation : les contractions et toutes les mesures seront supprimées.")) return;
+  S = Object.assign({}, vide); save(); location.reload();
+});
+
+function peindreStockage(){
+  const n = S.contractions.length + S.mesures.length;
+  const ko = (new Blob([JSON.stringify(S)]).size/1024).toFixed(1);
+  $("#etat-stockage").textContent = n + " entrée" + (n>1?"s":"") + " enregistrée" + (n>1?"s":"") + " · " + ko + " Ko sur cet appareil.";
+  const a = $("#avert-stockage");
+  if(!stockageOk){
+    a.hidden = false;
+    a.textContent = "Ce navigateur bloque l'enregistrement local (navigation privée ou site ouvert depuis un fichier). Les mesures ne survivront pas à la fermeture de l'onglet — exporte le JSON avant de fermer.";
+  } else a.hidden = true;
+}
+
+/* ===================== navigation ===================== */
+document.querySelectorAll("nav.barre button").forEach(b=>{
+  b.addEventListener("click", ()=>{
+    document.querySelectorAll("nav.barre button").forEach(x=>x.classList.toggle("on", x===b));
+    document.querySelectorAll(".vue").forEach(v=>v.classList.remove("actif"));
+    $("#vue-"+b.dataset.vue).classList.add("actif");
+    window.scrollTo(0,0);
+    if(b.dataset.vue === "rapport") peindreRapport();
+    if(b.dataset.vue === "agenda") peindreCalendrier();
+    if(b.dataset.vue === "donnees") peindreStockage();
+  });
+});
+
+/* ===================== boucle ===================== */
+function toutPeindre(){
+  peindreChrono(); peindreRuban(); peindreStats(); peindreJour();
+  peindreCalendrier(); peindreRapport(); peindreTerme(); peindreStockage();
+}
+if(S.encours) tic = setInterval(peindreChrono, 250);
+majFiltres();
+toutPeindre();
+setInterval(()=>{ if(!S.encours) peindreRuban(); peindreStats(); }, 30000);
+document.addEventListener("visibilitychange", ()=>{ if(!document.hidden) toutPeindre(); });
+</script>
+</body>
+</html>
