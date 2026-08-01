@@ -1644,7 +1644,7 @@ async function analyseIA(){
       let html = "", ul = false;
       lignes.forEach(x=>{
         const t = x.replace(/</g,"&lt;");
-        if(/^(Ce qui a chang|À signaler|A signaler|Questions à poser|Questions a poser)/i.test(t)){
+        if(/^(Situation des relev|Points d.attention|Pr[ée]parer le rendez|Ce qui a chang|[ÀA] signaler|Questions [àa] poser)/i.test(t)){
           if(ul){ html += "</ul>"; ul = false; }
           html += "<h4>"+t.replace(/\s*:\s*$/,"")+"</h4>";
         }else if(/^[-•]/.test(t)){
