@@ -71,7 +71,9 @@ header.top{padding:24px 0 18px;display:flex;align-items:center;justify-content:s
 .sync.cours i{background:var(--abricot);animation:souffle 1.1s infinite}
 .sync.err i,.sync.hors i{background:var(--alerte)}
 .terme{background:var(--lavande-voile);border:1px solid var(--lavande-pale);border-radius:20px;padding:10px 16px;
-  text-align:center;line-height:1.2;font-size:11px;color:var(--doux);font-weight:500;white-space:nowrap}
+  text-align:center;line-height:1.25;font-size:11px;color:var(--doux);font-weight:500;white-space:nowrap;
+  font-family:var(--sans);transition:transform .14s var(--gliss)}
+.terme:active{transform:scale(.94)}
 .terme b{display:block;font-family:var(--serif);color:var(--vert);font-size:17px;font-weight:600;margin-bottom:2px}
 
 h2.titre{font-family:var(--serif);font-size:25px;font-weight:600;margin:28px 0 14px;letter-spacing:-.015em}
@@ -229,12 +231,46 @@ nav.barre button.on svg{transform:scale(1.05)}
 .note-bas{font-size:12.5px;color:var(--doux);line-height:1.7;padding:28px 4px 12px;border-top:1px solid var(--bord);margin-top:32px}
 .avert{background:var(--alerte-voile);border:1px solid rgba(176,58,48,.28);border-radius:var(--ri);
   padding:14px 16px;font-size:13px;color:var(--alerte);line-height:1.6;margin-top:14px}
+
+/* ---- bandeau d'alertes cliniques ---- */
+#alertes{margin-bottom:6px}
+.alarme{border-radius:var(--rc);padding:16px 18px;margin-bottom:10px;border:1px solid var(--bord-blanc);
+  background:var(--blanc);box-shadow:var(--ombre);animation:surgir .4s var(--gliss) both}
+.alarme.urgence{background:var(--alerte-voile);border-color:rgba(176,58,48,.4)}
+.alarme.rapide{background:#FDF3E6;border-color:#F0D2A8}
+.alarme.signaler{background:var(--lavande-voile);border-color:var(--lavande-pale)}
+.al-tete{font-size:11.5px;font-weight:700;letter-spacing:.04em;text-transform:uppercase;margin-bottom:6px}
+.alarme.urgence .al-tete{color:var(--alerte)}
+.alarme.rapide .al-tete{color:#8F5F0E}
+.alarme.signaler .al-tete{color:var(--lavande-fonce)}
+.al-quoi{font-family:var(--serif);font-size:18px;font-weight:600;line-height:1.3;margin-bottom:7px}
+.al-faire{font-size:13.5px;line-height:1.6;color:var(--vert)}
+.al-src{font-size:11.5px;color:var(--doux);margin-top:9px;font-style:italic}
+.al-pied{font-size:12px;color:var(--doux);line-height:1.6;padding:2px 4px 8px}
+
+/* ---- recapitulatif ---- */
+#recap:not(:empty){margin-top:14px}
+.recap-msg{font-size:13.5px;color:var(--doux);padding:14px;background:var(--creme);border-radius:var(--ri);line-height:1.6}
+.recap-msg.mal{background:var(--alerte-voile);color:var(--alerte)}
+.recap-txt{background:var(--creme);border-radius:var(--ri);padding:16px 18px;animation:surgir .4s var(--gliss) both}
+.recap-txt h4{font-family:var(--serif);font-size:16px;font-weight:600;margin:16px 0 7px;color:var(--vert)}
+.recap-txt h4:first-child{margin-top:0}
+.recap-txt p{margin:0 0 9px;font-size:13.5px;line-height:1.7}
+.recap-ctx{font-size:12px;color:var(--doux);padding-bottom:11px;margin-bottom:4px;border-bottom:1px solid var(--bord)}
+.recap-txt ul{margin:0 0 4px;padding-left:20px}
+.recap-txt li{font-size:13.5px;line-height:1.65;margin-bottom:6px}
+.recap-msg a{text-decoration:underline}
+.recap-txt p:last-child{margin-bottom:0;color:var(--doux);font-size:12.5px;font-style:italic;
+  border-top:1px solid var(--bord);padding-top:11px;margin-top:13px}
+select{appearance:none;-webkit-appearance:none;background-image:url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='12' height='8'><path d='M1 1l5 5 5-5' stroke='%235F6B65' stroke-width='2' fill='none' stroke-linecap='round'/></svg>");
+  background-repeat:no-repeat;background-position:right 16px center}
 .imprime-seul{display:none}
 
 @media print{
   body{background:#fff;padding:0;font-size:11pt}
   .blob,nav.barre,.periodes,.chips,.btn,.ruban,.disque-zone,.trio,.jauge,header.top .terme,.sync,.porte{display:none!important}
   .vue{display:none!important} #vue-rapport{display:block!important;animation:none}
+  .alarme{background:#fff!important;border:1.5px solid #444!important;box-shadow:none;animation:none}
   .carte,.bloc{border:1px solid #bbb;box-shadow:none;break-inside:avoid}
   .defile{overflow:visible}
   .alerte{font-weight:700;text-decoration:underline}
@@ -267,10 +303,11 @@ nav.barre button.on svg{transform:scale(1.05)}
       <div class="marque">suivi<em>.</em></div>
       <div class="sync" id="sync"><i></i><span>—</span></div>
     </div>
-    <div class="terme" id="terme"></div>
+    <button class="terme" id="terme" aria-label="Modifier le terme"></button>
   </header>
 
   <section class="vue actif" id="vue-maintenant">
+    <div id="alertes" style="display:none"></div>
     <div class="legende">Rythme des contractions</div>
     <div class="ruban" id="ruban"></div>
     <div class="disque-zone">
@@ -325,6 +362,17 @@ nav.barre button.on svg{transform:scale(1.05)}
     <div class="synth" id="synthese"></div>
     <div class="legende">Tous les événements</div>
     <div class="defile"><table class="tableau" id="tab-evts"></table></div>
+    <div class="legende">Préparer la consultation</div>
+    <div class="carte">
+      <div style="font-size:13.5px;color:var(--doux);line-height:1.65">
+        Un récapitulatif ordonné de la période choisie : ce qui a changé, ce qu'il faut signaler,
+        et des questions à poser. Il décrit vos mesures, il ne les interprète pas.
+      </div>
+      <button class="btn fort" id="btn-synth">Générer le récapitulatif</button>
+      <button class="btn" id="btn-copier">Copier le relevé pour Claude</button>
+      <div id="recap"></div>
+    </div>
+
     <button class="btn fort" id="btn-imprimer" style="margin-top:20px">Imprimer / enregistrer en PDF</button>
     <div class="note-bas">Ce journal est un carnet de notes personnel. Ce n'est pas un dispositif médical : aucune valeur affichée ici ne remplace un avis, un examen ou un monitoring. En cas de doute, de saignement, de perte de liquide, de douleur inhabituelle, de baisse des mouvements du bébé ou de tension élevée, contactez votre sage-femme, votre maternité ou le 15.</div>
   </section>
@@ -361,8 +409,10 @@ nav.barre button.on svg{transform:scale(1.05)}
   <div class="feuille" role="dialog" aria-modal="true" aria-labelledby="f-titre">
     <h3 id="f-titre">Mesure</h3>
     <div id="f-champs"></div>
-    <label class="champ"><span>Date et heure</span><input type="datetime-local" id="f-quand"></label>
-    <label class="champ"><span>Note</span><textarea id="f-note" placeholder="Contexte, ressenti, position…"></textarea></label>
+    <div id="f-standard">
+      <label class="champ"><span>Date et heure</span><input type="datetime-local" id="f-quand"></label>
+      <label class="champ"><span>Note</span><textarea id="f-note" placeholder="Contexte, ressenti, position…"></textarea></label>
+    </div>
     <button class="btn fort" id="f-ok">Enregistrer</button>
     <button class="btn" id="f-annul">Annuler</button>
   </div>
@@ -632,7 +682,7 @@ function valeurTexte(m){
     case "tension": return v.sys+"/"+v.dia+" mmHg"+(v.pouls?" · "+v.pouls+" bpm":"");
     case "poids": return v.kg+" kg";
     case "temperature": return v.c+" °C";
-    case "glycemie": return v.gl+" g/L";
+    case "glycemie": return v.gl+" g/L"+(v.moment==="jeun"?" à jeun":v.moment==="repas"?" après repas":"");
     case "mouvements": return v.n+" mouvement"+(v.n>1?"s":"")+(v.min?" en "+v.min+" min":"");
     case "symptome": return v.txt || "—";
     default: return "—";
@@ -740,17 +790,25 @@ function peindreStats(){
   else{ j.classList.remove("atteint"); e.textContent = h1.length+" contr. sur 1 h"; }
 }
 
-function peindreTerme(){
-  const t = $("#terme");
-  if(!S.terme){ t.innerHTML = '<span style="opacity:.6">Terme non renseigné</span>'; return; }
+function grossesse(){
+  if(!S.terme) return null;
   const terme = new Date(S.terme+"T12:00:00");
+  if(isNaN(terme)) return null;
   const ddr = new Date(terme.getTime() - 280*86400000);
   const j = Math.floor((Date.now()-ddr)/86400000);
   const sa = Math.floor(j/7), rj = j%7;
   const reste = Math.ceil((terme - Date.now())/86400000);
-  if(j < 0 || sa > 45){ t.innerHTML = '<span style="opacity:.6">Terme : '+dateCourte(terme)+'</span>'; return; }
-  t.innerHTML = "<b>"+sa+" SA"+(rj?" + "+rj+" j":"")+"</b><br>"+
-    (reste >= 0 ? "terme dans "+reste+" j" : "terme dépassé de "+(-reste)+" j");
+  const tri = sa < 14 ? 1 : (sa < 28 ? 2 : 3);
+  return { terme:terme, jours:j, sa:sa, rj:rj, reste:reste, trimestre:tri, valide:(j >= 0 && sa <= 45) };
+}
+function peindreTerme(){
+  const t = $("#terme"), g = grossesse();
+  if(!g){ t.innerHTML = '<b style="font-size:14px">Ajouter</b>le terme'; return; }
+  if(!g.valide){ t.innerHTML = '<b style="font-size:14px">'+dateCourte(g.terme)+'</b>terme prévu'; return; }
+  const romain = ["","1er","2e","3e"][g.trimestre];
+  t.innerHTML = "<b>"+g.sa+" SA"+(g.rj?" + "+g.rj+" j":"")+"</b>"+
+    romain+" trimestre · "+
+    (g.reste >= 0 ? "J−"+g.reste : "terme +"+(-g.reste)+" j");
 }
 
 /* ============ listes ============ */
@@ -791,11 +849,17 @@ const SAISIES = {
     {k:"pouls", l:"Pouls (bpm)", t:"number", ph:"80"}]},
   poids:{titre:"Poids", champs:[{k:"kg", l:"Kilos", t:"number", pas:"0.1", ph:"64.5", req:1}]},
   temperature:{titre:"Température", champs:[{k:"c", l:"Degrés", t:"number", pas:"0.1", ph:"37.0", req:1}]},
-  glycemie:{titre:"Glycémie", champs:[{k:"gl", l:"g/L", t:"number", pas:"0.01", ph:"0.90", req:1}]},
+  glycemie:{titre:"Glycémie", champs:[
+    {k:"gl", l:"g/L", t:"number", pas:"0.01", ph:"0.90", req:1},
+    {k:"moment", l:"Moment", t:"choix", options:[["jeun","À jeun"],["repas","2 h après le repas"],["autre","Autre moment"]]}
+  ]},
   mouvements:{titre:"Mouvements du bébé", champs:[
     {k:"n", l:"Nombre ressenti", t:"number", ph:"10", req:1},
     {k:"min", l:"Sur combien de minutes", t:"number", ph:"120"}]},
-  symptome:{titre:"Symptôme", champs:[{k:"txt", l:"Lequel", t:"text", ph:"Nausées, jambes lourdes…", req:1}]}
+  symptome:{titre:"Symptôme", champs:[{k:"txt", l:"Lequel", t:"text", ph:"Nausées, jambes lourdes…", req:1}], suggestions:[
+    "Maux de tête","Troubles de la vision","Acouphènes","Douleur sous les côtes",
+    "Œdèmes / doigts gonflés","Saignement","Perte de liquide","Bébé bouge moins",
+    "Vomissements","Fièvre ou frissons","Douleur abdominale","Jambes lourdes","Nausées","Insomnie"]}
 };
 
 $("#chips").innerHTML = Object.keys(SAISIES).map(k=>
@@ -809,6 +873,10 @@ document.addEventListener("click", ev=>{
   if(b) ouvrirSaisie(b.dataset.saisie);
 });
 function champHTML(c){
+  if(c.t === "choix"){
+    return '<label class="champ"><span>'+c.l+'</span><select id="c-'+c.k+'">'+
+      c.options.map(o=>'<option value="'+o[0]+'">'+o[1]+'</option>').join("")+'</select></label>';
+  }
   return '<label class="champ"><span>'+c.l+'</span><input type="'+c.t+'" id="c-'+c.k+'"'+
     (c.pas?' step="'+c.pas+'"':'')+(c.t==="number"?' inputmode="decimal"':'')+' placeholder="'+(c.ph||"")+'"></label>';
 }
@@ -820,22 +888,78 @@ function ouvrirSaisie(type){
   if(type === "tension") h = '<div class="duo">'+d.champs.slice(0,2).map(champHTML).join("")+'</div><div style="height:13px"></div>'+champHTML(d.champs[2]);
   else if(type === "mouvements") h = '<div class="duo">'+d.champs.map(champHTML).join("")+'</div><div style="height:13px"></div>';
   else h = d.champs.map(champHTML).join("");
+  if(d.suggestions){
+    h += '<div style="margin:-4px 0 15px"><div style="font-size:12.5px;color:var(--doux);margin-bottom:8px">'+
+      'Signes fréquents — touchez pour remplir</div><div class="chips" style="gap:7px">'+
+      d.suggestions.map(s=>'<button type="button" class="chip sugg" data-sugg="'+s+'" '+
+        'style="padding:8px 13px;font-size:13px;box-shadow:none">'+s+'</button>').join("")+'</div></div>';
+  }
   $("#f-champs").innerHTML = h;
+  $("#f-champs").querySelectorAll("[data-sugg]").forEach(el=>el.addEventListener("click", ()=>{
+    const c = $("#c-txt"); if(c){ c.value = el.dataset.sugg; c.style.borderColor = ""; }
+  }));
   $("#f-quand").value = pourInput(new Date());
   $("#f-note").value = "";
   $("#voile").classList.add("ouvert");
   const p = $("#f-champs input"); if(p) setTimeout(()=>p.focus(), 120);
 }
-function fermerSaisie(){ $("#voile").classList.remove("ouvert"); saisieActive = null; }
+function ouvrirTerme(){
+  saisieActive = "__terme";
+  $("#f-titre").textContent = "Ma grossesse";
+  const g = grossesse();
+  $("#f-champs").innerHTML =
+    '<label class="champ"><span>Date du terme prévu (DPA)</span>'+
+    '<input type="date" id="c-terme" value="'+(S.terme||"")+'"></label>'+
+    '<label class="champ"><span>Prénom (en-tête du rapport)</span>'+
+    '<input type="text" id="c-prenom" placeholder="Facultatif" value="'+(S.prenom||"").replace(/"/g,"&quot;")+'"></label>'+
+    '<div id="apercu-sa" style="background:var(--lavande-voile);border:1px solid var(--lavande-pale);'+
+    'border-radius:var(--ri);padding:15px 17px;font-size:13.5px;color:var(--doux);line-height:1.7;margin-bottom:15px"></div>'+
+    '<div style="font-size:12.5px;color:var(--doux);line-height:1.6;margin-bottom:4px">'+
+    'Les semaines d\'aménorrhée sont comptées à partir du terme moins 280 jours. '+
+    'Si votre sage-femme retient une autre date, saisissez celle qu\'elle vous a donnée.</div>';
+  $("#f-standard").style.display = "none";
+  $("#voile").classList.add("ouvert");
+  const ch = $("#c-terme");
+  const rafraichirApercu = () => {
+    const memo = S.terme; S.terme = ch.value;
+    const g2 = grossesse(); S.terme = memo;
+    const el = $("#apercu-sa");
+    if(!g2){ el.textContent = "Choisissez une date pour voir l'avancement."; return; }
+    if(!g2.valide){ el.textContent = "Cette date ne correspond pas à une grossesse en cours."; return; }
+    el.innerHTML = "<b style=\"color:var(--vert);font-family:var(--serif);font-size:17px\">"+
+      g2.sa+" SA"+(g2.rj?" + "+g2.rj+" jours":"")+"</b><br>"+
+      ["","1er","2e","3e"][g2.trimestre]+" trimestre · "+
+      (g2.reste>=0 ? g2.reste+" jours avant le terme" : "terme dépassé de "+(-g2.reste)+" jours");
+  };
+  ch.addEventListener("input", rafraichirApercu);
+  rafraichirApercu();
+}
+$("#terme").addEventListener("click", ouvrirTerme);
+
+function fermerSaisie(){
+  $("#voile").classList.remove("ouvert");
+  $("#f-standard").style.display = "";
+  saisieActive = null;
+}
 $("#f-annul").addEventListener("click", fermerSaisie);
 $("#voile").addEventListener("click", e=>{ if(e.target.id === "voile") fermerSaisie(); });
 
 $("#f-ok").addEventListener("click", ()=>{
+  if(saisieActive === "__terme"){
+    S.terme = $("#c-terme").value;
+    S.prenom = $("#c-prenom").value.trim();
+    S.reglagesSale = 1;
+    $("#in-terme").value = S.terme || "";
+    $("#in-prenom").value = S.prenom || "";
+    save(); fermerSaisie(); toutPeindre(); planifier();
+    return;
+  }
   const d = SAISIES[saisieActive], v = {};
   for(const c of d.champs){
     const el = $("#c-"+c.k), val = el ? el.value.trim() : "";
     if(c.req && !val){ el.focus(); el.style.borderColor = "var(--corail)"; return; }
     if(val !== "") v[c.k] = c.t === "number" ? Number(val.replace(",",".")) : val;
+    if(c.t === "choix" && !val) v[c.k] = c.options[0][0];
   }
   const q = $("#f-quand").value;
   const m = { id:uid(), type:saisieActive, at:(q?new Date(q):new Date()).toISOString(),
@@ -1100,6 +1224,425 @@ $("#p-ok").addEventListener("click", async ()=>{
 });
 $("#p-mdp").addEventListener("keydown", e=>{ if(e.key === "Enter") $("#p-ok").click(); });
 
+/* =====================================================================
+   SEUILS CLINIQUES — grossesse à partir de 20 SA (5 mois) jusqu'au terme
+   Codés en dur, jamais confiés à un modèle de langage.
+   Sources : ameli.fr / HAS, CNGOF-SFD (diabète gestationnel),
+   recommandations pré-éclampsie 2024, Inserm, protocoles de maternité.
+   ===================================================================== */
+const SEUILS = {
+  tension:     { hta:[140,90], severe:[160,110] },
+  temperature: { fievre:38.0 },
+  mouvements:  { minimum:10, fenetreMin:120 },
+  glycemie:    { jeun:0.95, apresRepas:1.20 },
+  poids:       { kgParSemaine:1.0 },
+  contractions:{ prematureSA:37, intervalPremature:10, motif511:{duree:60, intervalle:5},
+                 tresRapprochees:3 },
+  termeDepasse: 41
+};
+
+/* Signes d'appel décrits par les sources professionnelles.
+   Recherchés dans le texte libre des symptômes. */
+const DRAPEAUX = [
+  { mots:["saigne","saignement","sang","hemorragie","hémorragie","métrorragie","metrorragie"],
+    niveau:"urgence", quoi:"Saignement signalé",
+    faire:"Tout saignement pendant la grossesse justifie un passage aux urgences de la maternité, même léger." },
+  { mots:["perte des eaux","perdu les eaux","liquide","poche des eaux","rupture"],
+    niveau:"urgence", quoi:"Perte de liquide signalée",
+    faire:"Une fissure ou rupture de la poche des eaux expose à un risque infectieux : rendez-vous à la maternité." },
+  { mots:["ne bouge plus","bouge plus","bouge moins","pas senti bouger","aucun mouvement","moins de mouvement"],
+    niveau:"urgence", quoi:"Baisse des mouvements du bébé signalée",
+    faire:"Une modification nette des mouvements habituels impose une consultation sans attendre, même près du terme." },
+  { mots:["mal de tete","mal de tête","maux de tete","maux de tête","cephalee","céphalée","migraine"],
+    niveau:"rapide", quoi:"Maux de tête signalés",
+    faire:"Des céphalées inhabituelles ou non calmées par le paracétamol font partie des signes de pré-éclampsie." },
+  { mots:["vision","visuel","phosphene","phosphène","mouche","tache devant","éblouissement","eblouissement","flou"],
+    niveau:"urgence", quoi:"Troubles visuels signalés",
+    faire:"Points lumineux, mouches ou vision trouble sont des signes neurologiques de pré-éclampsie : appelez sans attendre." },
+  { mots:["acouphene","acouphène","siffle","bourdonnement","oreille"],
+    niveau:"rapide", quoi:"Acouphènes signalés",
+    faire:"Les acouphènes figurent parmi les signes d'appel de la pré-éclampsie." },
+  { mots:["barre epigastrique","barre épigastrique","estomac","epigastrique","épigastrique","sous les cotes","sous les côtes"],
+    niveau:"urgence", quoi:"Douleur épigastrique signalée",
+    faire:"Une barre douloureuse sous les côtes est un signe de gravité de la pré-éclampsie." },
+  { mots:["oedeme","œdème","oedème","gonfle","gonflé","enfle","bague","doigts gonfl","visage gonfl"],
+    niveau:"rapide", quoi:"Œdèmes signalés",
+    faire:"Des œdèmes d'apparition brutale, surtout au visage ou aux mains, doivent être signalés rapidement." },
+  { mots:["convulsion","perte de connaissance","malaise","evanoui","évanoui"],
+    niveau:"urgence", quoi:"Malaise ou convulsion signalé",
+    faire:"Appelez le 15 immédiatement." },
+  { mots:["vomi","vomissement"],
+    niveau:"rapide", quoi:"Vomissements signalés",
+    faire:"Des vomissements apparus au 2e ou 3e trimestre doivent être signalés." },
+  { mots:["respir","souffle court","essouffl"],
+    niveau:"urgence", quoi:"Gêne respiratoire signalée",
+    faire:"Une difficulté à respirer impose un avis médical immédiat." },
+  { mots:["douleur abdominale","mal au ventre","ventre dur","contracture","douleur intense"],
+    niveau:"rapide", quoi:"Douleur abdominale signalée",
+    faire:"Une douleur abdominale intense ou continue justifie un appel à la maternité." },
+  { mots:["fievre","fièvre","frisson"],
+    niveau:"rapide", quoi:"Fièvre ou frissons signalés",
+    faire:"Une fièvre pendant la grossesse justifie un avis : elle peut traduire une infection." }
+];
+
+function normaliser(t){
+  return (t||"").toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g,"");
+}
+
+/* Renvoie la liste des alertes actives, triées par gravité. */
+function alertes(){
+  const out = [];
+  const g = grossesse();
+  const sa = g && g.valide ? g.sa : null;
+  const now = Date.now();
+  const H = 3600000;
+
+  const push = (niveau, quoi, faire, source) => out.push({niveau, quoi, faire, source});
+
+  // ---- Tension artérielle (pertinente après 20 SA) ----
+  const tensions = vivantesM().filter(m=>m.type==="tension")
+    .sort((a,b)=>new Date(b.at)-new Date(a.at));
+  const t = tensions[0];
+  if(t && (now - new Date(t.at)) < 48*H){
+    const s = +t.v.sys, d = +t.v.dia;
+    if(s >= SEUILS.tension.severe[0] || d >= SEUILS.tension.severe[1]){
+      push("urgence", "Tension "+s+"/"+d+" mmHg",
+        "À partir de 160/110, on parle d'hypertension sévère. Appelez la maternité ou le 15 maintenant.",
+        "ameli.fr, recommandations pré-éclampsie 2024");
+    } else if(s >= SEUILS.tension.hta[0] || d >= SEUILS.tension.hta[1]){
+      push("rapide", "Tension "+s+"/"+d+" mmHg",
+        "Au-delà de 140/90 après 20 SA, on parle d'hypertension gravidique. Le diagnostic demande une seconde mesure au repos, à quelques heures d'intervalle. Appelez votre sage-femme aujourd'hui.",
+        "ameli.fr, HAS");
+    }
+  }
+
+  // ---- Température ----
+  const temps = vivantesM().filter(m=>m.type==="temperature")
+    .sort((a,b)=>new Date(b.at)-new Date(a.at));
+  const te = temps[0];
+  if(te && (now - new Date(te.at)) < 24*H && +te.v.c >= SEUILS.temperature.fievre){
+    push("rapide", "Température "+(+te.v.c).toFixed(1)+" °C",
+      "À partir de 38 °C, une consultation à la maternité est recommandée : la fièvre peut traduire une infection et provoquer des contractions.",
+      "protocoles de maternité");
+  }
+
+  // ---- Mouvements du bébé ----
+  const mvts = vivantesM().filter(m=>m.type==="mouvements")
+    .sort((a,b)=>new Date(b.at)-new Date(a.at));
+  const mv = mvts[0];
+  if(mv && (now - new Date(mv.at)) < 24*H){
+    const n = +mv.v.n, min = +mv.v.min || 0;
+    if(n === 0){
+      push("urgence", "Aucun mouvement ressenti",
+        "Une absence de mouvements impose un passage aux urgences de la maternité sans attendre.",
+        "protocoles de maternité");
+    } else if(min >= SEUILS.mouvements.fenetreMin && n < SEUILS.mouvements.minimum){
+      push("urgence", n+" mouvement"+(n>1?"s":"")+" en "+min+" min",
+        "Le repère habituel est d'au moins 10 mouvements sur 2 heures. En dessous, consultez sans attendre.",
+        "protocoles de maternité, 3e trimestre");
+    }
+  }
+
+  // ---- Glycémie (si autosurveillance en cours) ----
+  const gly = vivantesM().filter(m=>m.type==="glycemie")
+    .sort((a,b)=>new Date(b.at)-new Date(a.at));
+  const gl = gly[0];
+  if(gl && (now - new Date(gl.at)) < 48*H){
+    const val = +gl.v.gl, moment = gl.v.moment || "";
+    const seuil = moment === "jeun" ? SEUILS.glycemie.jeun : SEUILS.glycemie.apresRepas;
+    if(val >= seuil){
+      push("signaler", "Glycémie "+val.toFixed(2)+" g/L"+(moment==="jeun"?" à jeun":moment==="repas"?" après repas":""),
+        "Les objectifs du CNGOF sont inférieurs à 0,95 g/L à jeun et 1,20 g/L deux heures après le repas. À signaler à l'équipe qui suit le diabète gestationnel.",
+        "CNGOF / Société francophone du diabète");
+    }
+  }
+
+  // ---- Prise de poids ----
+  const poids = vivantesM().filter(m=>m.type==="poids")
+    .sort((a,b)=>new Date(b.at)-new Date(a.at));
+  if(poids.length >= 2){
+    const a = poids[0], b = poids[1];
+    const jours = (new Date(a.at) - new Date(b.at))/86400000;
+    if(jours >= 3 && jours <= 21){
+      const parSem = ((+a.v.kg) - (+b.v.kg)) / (jours/7);
+      if(parSem >= SEUILS.poids.kgParSemaine){
+        push("signaler", "Prise de poids "+parSem.toFixed(1)+" kg/semaine",
+          "Une prise de poids supérieure à 1 kg par semaine peut traduire une rétention d'eau. À signaler, surtout si elle s'accompagne d'œdèmes.",
+          "Inserm, associations de prévention de la pré-éclampsie");
+      }
+    }
+  }
+
+  // ---- Contractions ----
+  const cs = vivantes();
+  const h1 = cs.filter(c=>new Date(c.debut) >= now - H);
+  if(h1.length >= 3){
+    const ecarts = [];
+    for(let i=1;i<h1.length;i++) ecarts.push((new Date(h1[i].debut)-new Date(h1[i-1].debut))/60000);
+    const moyEcart = ecarts.reduce((s,x)=>s+x,0)/ecarts.length;
+    const couvre = (new Date(h1[h1.length-1].debut) - new Date(h1[0].debut)) >= 50*60000;
+    const longues = h1.every(c=>c.secondes >= SEUILS.contractions.motif511.duree);
+
+    if(sa !== null && sa < SEUILS.contractions.prematureSA &&
+       moyEcart <= SEUILS.contractions.intervalPremature && couvre){
+      push("urgence", h1.length+" contractions régulières en 1 h, à "+sa+" SA",
+        "Avant 37 SA, des contractions régulières toutes les 10 minutes ou moins pendant plus d'une heure évoquent une menace d'accouchement prématuré. Rendez-vous à la maternité.",
+        "protocoles obstétricaux");
+    } else if(moyEcart <= SEUILS.contractions.tresRapprochees && longues){
+      push("urgence", "Contractions toutes les "+Math.round(moyEcart)+" min",
+        "Des contractions douloureuses toutes les 2 à 3 minutes justifient un départ immédiat pour la maternité.",
+        "protocoles de maternité");
+    } else if(longues && moyEcart <= SEUILS.contractions.motif511.intervalle + .5 && couvre){
+      push("rapide", "Motif 5-1-1 atteint",
+        "Contractions d'au moins 1 minute, toutes les 5 minutes ou moins, depuis 1 heure. Appelez votre maternité — le seuil retenu peut varier selon les équipes.",
+        "protocoles de maternité");
+    }
+  }
+
+  // ---- Terme dépassé ----
+  if(sa !== null && sa >= SEUILS.termeDepasse){
+    push("rapide", "Terme dépassé — "+sa+" SA",
+      "Au-delà de 41 SA, une surveillance rapprochée est mise en place. Contactez votre maternité si ce n'est pas déjà fait.",
+      "recommandations de suivi de fin de grossesse");
+  }
+
+  // ---- Symptômes signalés (48 h) ----
+  const symps = vivantesM().filter(m=>m.type==="symptome" && (now - new Date(m.at)) < 48*H);
+  const vus = new Set();
+  symps.forEach(s=>{
+    const txt = normaliser((s.v.txt||"") + " " + (s.note||""));
+    DRAPEAUX.forEach(d=>{
+      if(vus.has(d.quoi)) return;
+      if(d.mots.some(m=>txt.includes(normaliser(m)))){
+        vus.add(d.quoi);
+        push(d.niveau, d.quoi, d.faire, "signes d'appel documentés");
+      }
+    });
+  });
+
+  const rang = {urgence:0, rapide:1, signaler:2};
+  return out.sort((a,b)=>rang[a.niveau]-rang[b.niveau]);
+}
+
+function peindreAlertes(){
+  const zone = document.getElementById("alertes");
+  if(!zone) return;
+  const g = grossesse();
+  const liste = (g && g.valide && g.sa >= 20) ? alertes() : [];
+  if(!liste.length){ zone.innerHTML = ""; zone.style.display = "none"; return; }
+  zone.style.display = "";
+  const titre = {urgence:"Appelez maintenant", rapide:"À signaler aujourd'hui", signaler:"À mentionner en consultation"};
+  zone.innerHTML = liste.map(a=>
+    '<div class="alarme '+a.niveau+'">'+
+      '<div class="al-tete">'+titre[a.niveau]+'</div>'+
+      '<div class="al-quoi">'+a.quoi+'</div>'+
+      '<div class="al-faire">'+a.faire+'</div>'+
+      '<div class="al-src">Repère : '+a.source+'</div>'+
+    '</div>').join("") +
+    '<div class="al-pied">Ces repères sont des seuils publiés, pas un diagnostic. En cas de doute, appelez votre sage-femme, votre maternité, ou le 15.</div>';
+}
+
+/* ===== Récapitulatif de consultation ===== */
+function releveTexte(){
+  const lim = periode ? Date.now() - periode*86400000 : 0;
+  const evts = tousEvenements().filter(e=>e.at.getTime() >= lim);
+  if(!evts.length) return "";
+  const g = grossesse();
+  const l = [];
+  l.push("Contexte : " + (g && g.valide ? g.sa+" SA + "+g.rj+" jours, "+["","1er","2e","3e"][g.trimestre]+" trimestre, terme prévu le "+dateCourte(g.terme) : "terme non renseigné"));
+  l.push("Période du relevé : " + (PERIODES.find(p=>p.v===periode)||{l:"?"}).l);
+  l.push("");
+  l.push("Mesures, de la plus récente à la plus ancienne :");
+  evts.slice(0, 400).forEach(e=>{
+    l.push("- " + dateCourte(e.at) + " " + heure(e.at) + " | " + CATS[e.type].nom + " | " + e.valeur +
+      (e.duree!=null ? " | durée "+dureeCourte(e.duree) : "") +
+      (e.interv!=null ? " | intervalle depuis la précédente "+ecart(e.interv) : "") +
+      (e.note ? " | note : "+e.note : ""));
+  });
+  return l.join("\n");
+}
+
+/* =====================================================================
+   SYNTHÈSE LOCALE — calculée sur l'appareil, sans réseau, sans coût.
+   Purement descriptive : aucune interprétation, aucune réassurance.
+   ===================================================================== */
+function synthese(){
+  const lim = periode ? Date.now() - periode*86400000 : 0;
+  const evts = tousEvenements().filter(e=>e.at.getTime() >= lim);
+  if(!evts.length) return null;
+
+  const g = grossesse();
+  const par = {};
+  evts.forEach(e=>(par[e.type] = par[e.type] || []).push(e));
+  const vM = id => vivantesM().find(m=>m.id === id);
+  const moy = a => a.reduce((s,x)=>s+x,0)/a.length;
+  const chrono = a => a.slice().reverse();          // du plus ancien au plus récent
+  const nomPer = (PERIODES.find(p=>p.v===periode)||{l:"la période"}).l;
+
+  const change = [], signaler = [], questions = [];
+
+  /* ---- Tension ---- */
+  if(par.tension){
+    const c = chrono(par.tension).map(e=>({at:e.at, v:vM(e.id).v, al:e.alerte}));
+    const sys = c.map(x=>+x.v.sys), dia = c.map(x=>+x.v.dia);
+    change.push(c.length+" relevé"+(c.length>1?"s":"")+" de tension, moyenne "+
+      Math.round(moy(sys))+"/"+Math.round(moy(dia))+", du plus bas "+
+      Math.min(...sys)+"/"+Math.min(...dia)+" au plus haut "+Math.max(...sys)+"/"+Math.max(...dia)+".");
+    if(c.length >= 4){
+      const m1 = moy(sys.slice(0, Math.floor(c.length/2))), m2 = moy(sys.slice(Math.floor(c.length/2)));
+      const d = m2 - m1;
+      if(Math.abs(d) >= 5) change.push("La systolique "+(d>0?"monte":"descend")+" de "+
+        Math.abs(Math.round(d))+" mmHg entre la première et la seconde moitié de "+nomPer.toLowerCase()+".");
+    }
+    const hauts = c.filter(x=>x.al);
+    if(hauts.length) signaler.push(hauts.length+" relevé"+(hauts.length>1?"s":"")+" à 140/90 ou au-dessus, dont le "+
+      dateCourte(hauts[hauts.length-1].at)+" à "+heure(hauts[hauts.length-1].at)+
+      " ("+hauts[hauts.length-1].v.sys+"/"+hauts[hauts.length-1].v.dia+").");
+    questions.push("Ma tension justifie-t-elle une surveillance plus rapprochée ?");
+  }
+
+  /* ---- Contractions ---- */
+  if(par.contraction){
+    const c = par.contraction, ds = c.map(x=>x.duree);
+    const ivs = c.map(x=>x.interv).filter(x=>x!=null && x < 6*3600000);
+    change.push(c.length+" contraction"+(c.length>1?"s":"")+" enregistrée"+(c.length>1?"s":"")+
+      ", durée moyenne "+dureeCourte(moy(ds))+" (de "+dureeCourte(Math.min(...ds))+" à "+dureeCourte(Math.max(...ds))+")"+
+      (ivs.length ? ", intervalle moyen "+ecart(moy(ivs))+" et le plus court "+ecart(Math.min(...ivs)) : "")+".");
+    const parJour = {};
+    c.forEach(e=>{ const k = jourCle(e.at); parJour[k] = (parJour[k]||0)+1; });
+    const jours = Object.keys(parJour).sort();
+    if(jours.length >= 2){
+      const prem = parJour[jours[0]], dern = parJour[jours[jours.length-1]];
+      if(dern > prem) change.push("Le nombre quotidien augmente : "+prem+" le "+
+        dateCourte(new Date(jours[0]+"T12:00:00"))+", "+dern+" le "+dateCourte(new Date(jours[jours.length-1]+"T12:00:00"))+".");
+    }
+    if(ivs.length && Math.min(...ivs) <= 10*60000)
+      signaler.push("Intervalle le plus court observé : "+ecart(Math.min(...ivs))+".");
+    questions.push("À partir de quel rythme de contractions dois-je vous appeler ou venir ?");
+  }
+
+  /* ---- Poids ---- */
+  if(par.poids && par.poids.length >= 2){
+    const c = chrono(par.poids).map(e=>({at:e.at, kg:+vM(e.id).v.kg}));
+    const d = c[c.length-1].kg - c[0].kg;
+    const sem = Math.max(1, (c[c.length-1].at - c[0].at)/(7*86400000));
+    change.push("Poids : "+(d>=0?"+":"")+d.toFixed(1)+" kg sur "+nomPer.toLowerCase()+
+      ", soit "+(d/sem>=0?"+":"")+(d/sem).toFixed(2)+" kg par semaine en moyenne (dernier : "+c[c.length-1].kg.toFixed(1)+" kg).");
+    if(d/sem >= 1) signaler.push("Prise de poids supérieure à 1 kg par semaine.");
+  } else if(par.poids){
+    change.push("Un seul relevé de poids : "+(+vM(par.poids[0].id).v.kg).toFixed(1)+" kg.");
+  }
+
+  /* ---- Mouvements ---- */
+  if(par.mouvements){
+    const c = chrono(par.mouvements).map(e=>({at:e.at, n:+vM(e.id).v.n, min:+vM(e.id).v.min||0}));
+    const n = c.map(x=>x.n);
+    change.push(c.length+" comptage"+(c.length>1?"s":"")+" de mouvements, de "+Math.min(...n)+" à "+Math.max(...n)+
+      " (moyenne "+Math.round(moy(n))+").");
+    const bas = c.filter(x=>x.min >= 120 && x.n < 10);
+    if(bas.length) signaler.push(bas.length+" comptage"+(bas.length>1?"s":"")+" sous 10 mouvements sur 2 heures.");
+    questions.push("Quelle méthode de comptage des mouvements recommandez-vous pour mon terme ?");
+  }
+
+  /* ---- Température ---- */
+  if(par.temperature){
+    const t = par.temperature.map(e=>+vM(e.id).v.c);
+    change.push(par.temperature.length+" prise"+(par.temperature.length>1?"s":"")+" de température, maximum "+
+      Math.max(...t).toFixed(1)+" °C.");
+    const f = par.temperature.filter(e=>e.alerte);
+    if(f.length) signaler.push(f.length+" épisode"+(f.length>1?"s":"")+" à 38 °C ou plus.");
+  }
+
+  /* ---- Glycémie ---- */
+  if(par.glycemie){
+    const c = par.glycemie.map(e=>({v:+vM(e.id).v.gl, moment:vM(e.id).v.moment||"autre"}));
+    const jeun = c.filter(x=>x.moment==="jeun"), repas = c.filter(x=>x.moment==="repas");
+    const bits = [];
+    if(jeun.length) bits.push("à jeun moyenne "+moy(jeun.map(x=>x.v)).toFixed(2)+" g/L (max "+Math.max(...jeun.map(x=>x.v)).toFixed(2)+")");
+    if(repas.length) bits.push("après repas moyenne "+moy(repas.map(x=>x.v)).toFixed(2)+" g/L (max "+Math.max(...repas.map(x=>x.v)).toFixed(2)+")");
+    change.push("Glycémie : "+c.length+" mesure"+(c.length>1?"s":"")+(bits.length?", "+bits.join(", "):"")+".");
+    const hors = jeun.filter(x=>x.v>=0.95).length + repas.filter(x=>x.v>=1.20).length;
+    if(hors) signaler.push(hors+" mesure"+(hors>1?"s":"")+" au-dessus des objectifs (0,95 g/L à jeun, 1,20 g/L après repas).");
+  }
+
+  /* ---- Symptômes ---- */
+  if(par.symptome){
+    const liste = chrono(par.symptome).map(e=>vM(e.id).v.txt).filter(Boolean);
+    const compte = {};
+    liste.forEach(s=>{ const k=s.trim(); compte[k]=(compte[k]||0)+1; });
+    const tri = Object.entries(compte).sort((a,b)=>b[1]-a[1]);
+    change.push("Symptômes notés : "+tri.map(([s,n])=>s+(n>1?" ("+n+"×)":"")).join(", ")+".");
+    const rouges = new Set();
+    par.symptome.forEach(e=>{
+      const txt = normaliser((vM(e.id).v.txt||"")+" "+(e.note||""));
+      DRAPEAUX.forEach(d=>{ if(d.mots.some(m=>txt.includes(normaliser(m)))) rouges.add(d.quoi); });
+    });
+    if(rouges.size) signaler.push("Signes d'appel notés : "+[...rouges].join(", ")+".");
+  }
+
+  if(!signaler.length) signaler.push("Aucun dépassement de seuil sur la période. Cela ne veut pas dire que tout va bien : seuls les éléments saisis sont pris en compte.");
+  questions.push("Y a-t-il des mesures que je devrais prendre plus souvent, ou d'autres à noter ?");
+  if(g && g.valide && g.sa >= 36) questions.push("À quel moment exactement dois-je partir pour la maternité ?");
+
+  return { change, signaler, questions, nomPer, contexte: g && g.valide
+    ? g.sa+" SA + "+g.rj+" jours, "+["","1er","2e","3e"][g.trimestre]+" trimestre, terme le "+dateCourte(g.terme)
+    : "terme non renseigné" };
+}
+
+function peindreSynthese(){
+  const zone = document.getElementById("recap");
+  const s = synthese();
+  if(!s){ zone.innerHTML = '<div class="recap-msg">Aucune mesure sur cette période.</div>'; return; }
+  const bloc = (titre, l) => '<h4>'+titre+'</h4><ul>'+l.map(x=>'<li>'+x+'</li>').join("")+'</ul>';
+  zone.innerHTML = '<div class="recap-txt">'+
+    '<div class="recap-ctx">'+s.contexte+' · '+s.nomPer+'</div>'+
+    bloc("Ce qui a changé", s.change)+
+    bloc("À signaler en consultation", s.signaler)+
+    bloc("Questions à poser", s.questions)+
+    '<p>Ce récapitulatif décrit vos mesures, il ne les interprète pas. En cas de doute, appelez votre sage-femme ou votre maternité.</p>'+
+  '</div>';
+}
+
+/* ===== Copier le relevé pour le coller dans l'app Claude ===== */
+function texteAColler(){
+  const s = synthese();
+  const releve = releveTexte();
+  if(!releve) return "";
+  return [
+    "Voici le journal de suivi de ma grossesse. Aide-moi à préparer ma consultation avec la sage-femme.",
+    "",
+    "Décris et organise ces mesures : ce qui a changé, ce qu'il faut signaler, et des questions à poser.",
+    "Ne pose pas de diagnostic, ne me dis pas si c'est normal ou rassurant, et ne me conseille pas d'attendre.",
+    "",
+    "---",
+    releve
+  ].join("\n");
+}
+
+async function copierPourClaude(){
+  const b = document.getElementById("btn-copier");
+  const t = texteAColler();
+  if(!t){ document.getElementById("recap").innerHTML = '<div class="recap-msg">Aucune mesure sur cette période.</div>'; return; }
+  let bon = false;
+  try{
+    await navigator.clipboard.writeText(t);
+    bon = true;
+  }catch(e){
+    const z = document.createElement("textarea");
+    z.value = t;
+    z.style.cssText = "position:fixed;top:0;left:0;opacity:0";
+    document.body.appendChild(z); z.focus(); z.select();
+    try{ bon = document.execCommand("copy"); }catch(x){ bon = false; }
+    document.body.removeChild(z);
+  }
+  b.textContent = bon ? "Relevé copié ✓" : "Copie impossible";
+  document.getElementById("recap").innerHTML = bon
+    ? '<div class="recap-msg">Le relevé est dans le presse-papier. Ouvrez l\'app Claude, collez, envoyez. '+
+      '<a href="https://claude.ai/new" target="_blank" rel="noopener" style="color:var(--lavande-fonce);font-weight:700">Ouvrir Claude</a></div>'
+    : '<div class="recap-msg mal">Le navigateur a refusé la copie. Utilisez l\'export CSV dans l\'onglet Données.</div>';
+  setTimeout(()=>{ b.textContent = "Copier le relevé pour Claude"; }, 4000);
+}
+
 /* ============ navigation ============ */
 const ORDRE = ["maintenant","agenda","rapport","donnees"];
 let vueActive = "maintenant";
@@ -1188,8 +1731,10 @@ document.querySelectorAll("nav.barre button").forEach(b=>
 function toutPeindre(){
   peindreChrono(); peindreRuban(); peindreStats(); peindreJour();
   peindreCalendrier(); peindreRapport(); peindreTerme();
-  peindreStockage(); peindreSync(); peindreEtatSync();
+  peindreStockage(); peindreSync(); peindreEtatSync(); peindreAlertes();
 }
+document.getElementById("btn-synth").addEventListener("click", peindreSynthese);
+document.getElementById("btn-copier").addEventListener("click", copierPourClaude);
 if(S.encours) tic = setInterval(peindreChrono, 250);
 majFiltres();
 toutPeindre();
