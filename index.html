@@ -265,11 +265,64 @@ nav.barre button.on svg{transform:scale(1.05)}
   border-top:1px solid var(--bord);padding-top:11px;margin-top:13px}
 select{appearance:none;-webkit-appearance:none;background-image:url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='12' height='8'><path d='M1 1l5 5 5-5' stroke='%235F6B65' stroke-width='2' fill='none' stroke-linecap='round'/></svg>");
   background-repeat:no-repeat;background-position:right 16px center}
+
+/* ---- bandeau d'avancement ---- */
+.bandeau{display:block;width:100%;text-align:left;background:var(--lavande-voile);
+  border:1px solid var(--lavande-pale);border-radius:var(--rc);padding:16px 18px;margin-top:16px;
+  box-shadow:var(--ombre);transition:transform .14s var(--gliss);font-family:var(--sans)}
+.bandeau:active{transform:scale(.985)}
+.bandeau.manque{background:#FDF3E6;border-color:#F0D2A8}
+.b-haut{display:flex;align-items:flex-start;justify-content:space-between;gap:14px}
+.b-sa{font-family:var(--serif);font-size:32px;font-weight:600;line-height:1;letter-spacing:-.02em;color:var(--vert)}
+.b-sa span{font-size:17px;font-weight:500;color:var(--doux)}
+.b-sous{font-size:12.5px;color:var(--doux);margin-top:6px;line-height:1.5}
+.b-titre{font-family:var(--serif);font-size:19px;font-weight:600;color:#8F5F0E}
+.bandeau.manque .b-sous{color:#7A5A2E}
+.b-terme{font-size:10.5px;color:var(--doux);text-align:right;line-height:1.5;white-space:nowrap;padding-top:3px}
+.b-terme b{font-size:13.5px;color:var(--vert);font-weight:700}
+.b-piste{position:relative;height:7px;background:rgba(16,58,47,.09);border-radius:99px;margin-top:14px;overflow:hidden}
+.b-jauge{position:absolute;left:0;top:0;bottom:0;background:var(--lavande);border-radius:99px;
+  transition:width .6s var(--gliss)}
+.b-piste i{position:absolute;top:0;bottom:0;width:1.5px;background:rgba(255,255,255,.75)}
+
+/* ---- graphiques ---- */
+#graphiques{display:grid;gap:11px}
+.g-carte{background:var(--blanc);border:1px solid var(--bord-blanc);border-radius:var(--rc);
+  padding:17px 16px 12px;box-shadow:var(--ombre)}
+.g-titre{font-family:var(--serif);font-size:17px;font-weight:600;line-height:1.25}
+.g-sous{font-size:12.5px;color:var(--doux);margin:4px 0 10px;line-height:1.5}
+.graphe{width:100%;height:auto;display:block;overflow:visible}
+.g-ax{font-size:8.5px;fill:var(--doux);font-family:var(--sans);font-weight:500}
+.g-note{font-size:11.5px;color:var(--doux);line-height:1.5;margin-top:8px;font-style:italic}
+.g-vide{font-size:13px;color:var(--doux);padding:18px 4px;text-align:center;line-height:1.55}
+
+/* ---- import par photo ---- */
+.btn.photo{display:flex;align-items:center;justify-content:center;gap:10px;margin-top:14px;
+  background:var(--lavande-voile);border-color:var(--lavande-pale);color:var(--vert);font-weight:700}
+.btn.photo svg{width:21px;height:21px;stroke:var(--lavande-fonce);fill:none;stroke-width:1.8;
+  stroke-linecap:round;stroke-linejoin:round;flex:none}
+#etat-photo:not(:empty){margin-top:10px}
+
+.relu-avert{background:#FDF3E6;border:1px solid #F0D2A8;border-radius:var(--ri);padding:14px 16px;
+  font-size:13px;line-height:1.6;color:#7A5A2E;margin-bottom:16px}
+.relu-note{font-size:12.5px;color:var(--alerte);margin:-8px 0 14px;line-height:1.5}
+.relu-liste{display:grid;gap:9px;margin-bottom:16px}
+.relu-ligne{border:1px solid var(--bord-blanc);border-radius:var(--ri);padding:13px 14px;background:var(--blanc)}
+.relu-ligne.doute{border-color:#F0D2A8;background:#FEFAF4}
+.relu-case{display:flex;align-items:center;gap:10px;cursor:pointer;margin:0}
+.relu-case input{width:21px;height:21px;flex:none;accent-color:var(--vert);margin:0}
+.relu-nom{font-size:14.5px;font-weight:600;line-height:1.3}
+.relu-val{display:flex;align-items:center;gap:9px;margin-top:9px;padding-left:31px}
+.relu-val input{flex:1;padding:11px 13px;font-size:16px;font-weight:700;background:var(--creme)}
+.relu-unite{font-size:13px;color:var(--doux);min-width:52px;font-weight:500}
+.relu-doute{font-size:12px;color:#8F5F0E;margin-top:7px;padding-left:31px;font-weight:600}
+.relu-src{font-size:12px;color:var(--doux);margin-top:6px;padding-left:31px;font-style:italic}
 .imprime-seul{display:none}
 
 @media print{
   body{background:#fff;padding:0;font-size:11pt}
-  .blob,nav.barre,.periodes,.chips,.btn,.ruban,.disque-zone,.trio,.jauge,header.top .terme,.sync,.porte{display:none!important}
+  .blob,nav.barre,.periodes,.chips,.btn,#etat-photo,.ruban,.disque-zone,.trio,.jauge,header.top .terme,.sync,.porte,.bandeau{display:none!important}
+  .g-carte{border:1px solid #bbb;box-shadow:none;break-inside:avoid}
   .vue{display:none!important} #vue-rapport{display:block!important;animation:none}
   .alarme{background:#fff!important;border:1.5px solid #444!important;box-shadow:none;animation:none}
   .carte,.bloc{border:1px solid #bbb;box-shadow:none;break-inside:avoid}
@@ -299,6 +352,7 @@ select{appearance:none;-webkit-appearance:none;background-image:url("data:image/
 </div>
 
 <div class="wrap">
+  <button class="bandeau" id="bandeau"></button>
   <header class="top">
     <div>
       <div class="marque">suivi<em>.</em></div>
@@ -331,6 +385,11 @@ select{appearance:none;-webkit-appearance:none;background-image:url("data:image/
     </div>
     <div class="legende">Ajouter une mesure</div>
     <div class="chips" id="chips"></div>
+    <button class="btn photo" id="btn-photo">
+      <svg viewBox="0 0 24 24" aria-hidden="true"><rect x="3" y="6" width="18" height="14" rx="4"/><circle cx="12" cy="13" r="3.6"/><path d="M9 6l1.3-2h3.4L15 6"/></svg>
+      Importer une prise de sang depuis une photo</button>
+    <input type="file" id="fichier-photo" accept="image/*" hidden>
+    <div id="etat-photo"></div>
     <div class="legende">Aujourd'hui</div>
     <div class="carte" id="liste-jour"></div>
   </section>
@@ -363,6 +422,9 @@ select{appearance:none;-webkit-appearance:none;background-image:url("data:image/
     <div class="synth" id="synthese"></div>
     <div class="legende">Tous les événements</div>
     <div class="defile"><table class="tableau" id="tab-evts"></table></div>
+    <div class="legende">Courbes d'évolution</div>
+    <div id="graphiques"></div>
+
     <div class="legende">Préparer la consultation</div>
     <div class="carte">
       <div style="font-size:13.5px;color:var(--doux);line-height:1.65">
@@ -447,7 +509,7 @@ let stockageOk = true;
 function lireL(k){ try{ const t = localStorage.getItem(k); return t?JSON.parse(t):null; }catch(e){ stockageOk=false; return null; } }
 function ecrireL(k,o){ try{ localStorage.setItem(k, JSON.stringify(o)); }catch(e){ stockageOk=false; } }
 
-const vide = { contractions:[], mesures:[], terme:"", prenom:"", reglagesSale:0, encours:null };
+const vide = { contractions:[], mesures:[], terme:"", prenom:"", ancreDate:"", ancreJours:null, reglagesSale:0, encours:null };
 let S = Object.assign({}, vide, lireL(CLE_DATA) || lireL("suivi-grossesse-v1") || {});
 S.contractions = S.contractions || [];
 S.mesures = S.mesures || [];
@@ -550,7 +612,8 @@ async function pousser(){
     const r = await api("/rest/v1/sg_reglages?on_conflict=compte", {
       method:"POST",
       headers:{ "content-type":"application/json", Prefer:"resolution=merge-duplicates,return=minimal" },
-      body: JSON.stringify([{ compte:SESSION.uid, terme:S.terme||null, prenom:S.prenom||"" }])
+      body: JSON.stringify([{ compte:SESSION.uid, terme:S.terme||null, prenom:S.prenom||"",
+        ancre_date:S.ancreDate||null, ancre_jours:(S.ancreJours===""||S.ancreJours==null)?null:Number(S.ancreJours) }])
     });
     if(!r.ok) throw new Error("réglages "+r.status);
     S.reglagesSale = 0;
@@ -587,6 +650,8 @@ async function tirer(){
   if(rg.length && !S.reglagesSale){
     if(rg[0].terme !== undefined) S.terme = rg[0].terme || "";
     S.prenom = rg[0].prenom || "";
+    if(rg[0].ancre_date !== undefined) S.ancreDate = rg[0].ancre_date || "";
+    if(rg[0].ancre_jours !== undefined) S.ancreJours = rg[0].ancre_jours;
     $("#in-terme").value = S.terme || "";
     $("#in-prenom").value = S.prenom || "";
   }
@@ -649,7 +714,8 @@ const CATS = {
   temperature:{nom:"Température", coul:"#8F5F0E"},
   glycemie:   {nom:"Glycémie",    coul:"#A3416B"},
   mouvements: {nom:"Mouvements",  coul:"#25708A"},
-  symptome:   {nom:"Symptôme",    coul:"#B03A30"}
+  symptome:   {nom:"Symptôme",    coul:"#B03A30"},
+  biologie:   {nom:"Prise de sang", coul:"#2E6E4E"}
 };
 
 /* Échappement HTML : le texte saisi (symptômes, notes, prénom) ne doit jamais
@@ -694,6 +760,11 @@ function valeurTexte(m){
     case "temperature": return v.c+" °C";
     case "glycemie": return v.gl+" g/L"+(v.moment==="jeun"?" à jeun":v.moment==="repas"?" après repas":"");
     case "mouvements": return v.n+" mouvement"+(v.n>1?"s":"")+(v.min?" en "+v.min+" min":"");
+    case "biologie": {
+      const d = (typeof BIO !== "undefined" && BIO[v.analyse]) ? BIO[v.analyse] : null;
+      const nom = v.analyse === "autre" ? (v.libelle || "Analyse") : (d ? d.nom : "Analyse");
+      return nom+" "+v.valeur+(d && d.unite ? " "+d.unite : "");
+    }
     case "symptome": return v.txt || "—";
     default: return "—";
   }
@@ -800,16 +871,39 @@ function peindreStats(){
   else{ j.classList.remove("atteint"); e.textContent = h1.length+" contr. sur 1 h"; }
 }
 
+/* En France le terme est fixe a 41 SA, soit 287 jours d'amenorrhee, et non 40.
+   Le calage explicite prime : il couvre la datation par echographie et la FIV,
+   ou l'age gestationnel ne se deduit pas du terme. */
+const JOURS_TERME = 287;
+
 function grossesse(){
-  if(!S.terme) return null;
-  const terme = new Date(S.terme+"T12:00:00");
-  if(isNaN(terme)) return null;
-  const ddr = new Date(terme.getTime() - 280*86400000);
-  const j = Math.floor((Date.now()-ddr)/86400000);
+  let j = null, terme = null;
+
+  if(S.terme){
+    const t = new Date(S.terme+"T12:00:00");
+    if(!isNaN(t)) terme = t;
+  }
+  if(S.ancreDate && S.ancreJours != null){
+    const a = new Date(S.ancreDate+"T12:00:00");
+    if(!isNaN(a)){
+      const ecoules = Math.floor((Date.now() - a)/86400000);
+      j = Number(S.ancreJours) + ecoules;
+    }
+  }
+  if(j === null){
+    if(!terme) return null;
+    j = Math.floor((Date.now() - (terme.getTime() - JOURS_TERME*86400000))/86400000);
+  }
+  if(!terme && S.ancreDate && S.ancreJours != null){
+    terme = new Date(Date.now() + (JOURS_TERME - j)*86400000);
+  }
+
   const sa = Math.floor(j/7), rj = j%7;
-  const reste = Math.ceil((terme - Date.now())/86400000);
+  const reste = terme ? Math.ceil((terme - Date.now())/86400000) : (JOURS_TERME - j);
   const tri = sa < 14 ? 1 : (sa < 28 ? 2 : 3);
-  return { terme:terme, jours:j, sa:sa, rj:rj, reste:reste, trimestre:tri, valide:(j >= 0 && sa <= 45) };
+  return { terme:terme, jours:j, sa:sa, rj:rj, reste:reste, trimestre:tri,
+           cale: !!(S.ancreDate && S.ancreJours != null),
+           valide:(j >= 0 && sa <= 45) };
 }
 function peindreTerme(){
   const t = $("#terme"), g = grossesse();
@@ -865,6 +959,11 @@ const SAISIES = {
   mouvements:{titre:"Mouvements du bébé", champs:[
     {k:"n", l:"Nombre ressenti", t:"number", ph:"10", req:1},
     {k:"min", l:"Sur combien de minutes", t:"number", ph:"120"}]},
+  biologie:{titre:"Prise de sang", champs:[
+    {k:"analyse", l:"Analyse", t:"choix", options:"__BIO__"},
+    {k:"valeur", l:"Résultat", t:"number", pas:"0.01", ph:"12.4", req:1},
+    {k:"libelle", l:"Nom (si « Autre analyse »)", t:"text", ph:"Facultatif"}
+  ]},
   symptome:{titre:"Symptôme", champs:[{k:"txt", l:"Lequel", t:"text", ph:"Nausées, jambes lourdes…", req:1}], suggestions:[
     "Maux de tête","Troubles de la vision","Acouphènes","Douleur sous les côtes",
     "Œdèmes / doigts gonflés","Saignement","Perte de liquide","Bébé bouge moins",
@@ -883,8 +982,17 @@ document.addEventListener("click", ev=>{
 });
 function champHTML(c){
   if(c.t === "choix"){
-    return '<label class="champ"><span>'+c.l+'</span><select id="c-'+c.k+'">'+
-      c.options.map(o=>'<option value="'+o[0]+'">'+o[1]+'</option>').join("")+'</select></label>';
+    let opts;
+    if(c.options === "__BIO__"){
+      const grp = {};
+      Object.keys(BIO).forEach(k=>{ (grp[BIO[k].grp] = grp[BIO[k].grp] || []).push(k); });
+      opts = Object.keys(grp).map(g=>'<optgroup label="'+g+'">'+
+        grp[g].map(k=>'<option value="'+k+'">'+BIO[k].nom+(BIO[k].unite?" ("+BIO[k].unite+")":"")+'</option>').join("")+
+        '</optgroup>').join("");
+    }else{
+      opts = c.options.map(o=>'<option value="'+o[0]+'">'+o[1]+'</option>').join("");
+    }
+    return '<label class="champ"><span>'+c.l+'</span><select id="c-'+c.k+'">'+opts+'</select></label>';
   }
   return '<label class="champ"><span>'+c.l+'</span><input type="'+c.t+'" id="c-'+c.k+'"'+
     (c.pas?' step="'+c.pas+'"':'')+(c.t==="number"?' inputmode="decimal"':'')+' placeholder="'+(c.ph||"")+'"></label>';
@@ -917,30 +1025,54 @@ function ouvrirTerme(){
   $("#f-titre").textContent = "Ma grossesse";
   const g = grossesse();
   $("#f-champs").innerHTML =
-    '<label class="champ"><span>Date du terme prévu (DPA)</span>'+
+    '<label class="champ"><span>Date du terme prévu</span>'+
     '<input type="date" id="c-terme" value="'+(S.terme||"")+'"></label>'+
-    '<label class="champ"><span>Prénom (en-tête du rapport)</span>'+
-    '<input type="text" id="c-prenom" placeholder="Facultatif" value="'+ech(S.prenom)+'"></label>'+
     '<div id="apercu-sa" style="background:var(--lavande-voile);border:1px solid var(--lavande-pale);'+
     'border-radius:var(--ri);padding:15px 17px;font-size:13.5px;color:var(--doux);line-height:1.7;margin-bottom:15px"></div>'+
-    '<div style="font-size:12.5px;color:var(--doux);line-height:1.6;margin-bottom:4px">'+
-    'Les semaines d\'aménorrhée sont comptées à partir du terme moins 280 jours. '+
-    'Si votre sage-femme retient une autre date, saisissez celle qu\'elle vous a donnée.</div>';
+    '<div style="font-size:12.5px;color:var(--doux);line-height:1.6;margin:18px 0 12px;'+
+    'border-top:1px solid var(--bord);padding-top:16px">'+
+    '<b style="color:var(--vert)">Calage précis (recommandé)</b><br>'+
+    'Le calcul depuis le terme varie selon les équipes (40 ou 41 SA), la datation échographique '+
+    'et, en FIV, la date de transfert. Indiquez ci-dessous un repère donné par votre sage-femme : '+
+    'il prendra le pas sur le calcul automatique.</div>'+
+    '<label class="champ"><span>À la date du</span>'+
+    '<input type="date" id="c-ancre-date" value="'+(S.ancreDate||"")+'"></label>'+
+    '<div class="duo">'+
+      '<label class="champ"><span>elle était à … SA</span>'+
+      '<input type="number" id="c-ancre-sa" inputmode="numeric" min="0" max="45" placeholder="23" value="'+
+        (S.ancreJours!=null ? Math.floor(S.ancreJours/7) : "")+'"></label>'+
+      '<label class="champ"><span>+ … jours</span>'+
+      '<input type="number" id="c-ancre-j" inputmode="numeric" min="0" max="6" placeholder="3" value="'+
+        (S.ancreJours!=null ? (S.ancreJours%7) : "")+'"></label>'+
+    '</div>'+
+    '<div style="height:15px"></div>'+
+    '<label class="champ"><span>Prénom (en-tête du rapport)</span>'+
+    '<input type="text" id="c-prenom" placeholder="Facultatif" value="'+ech(S.prenom)+'"></label>';
   $("#f-standard").style.display = "none";
   $("#voile").classList.add("ouvert");
-  const ch = $("#c-terme");
   const rafraichirApercu = () => {
-    const memo = S.terme; S.terme = ch.value;
-    const g2 = grossesse(); S.terme = memo;
+    const memo = {t:S.terme, d:S.ancreDate, j:S.ancreJours};
+    S.terme = $("#c-terme").value;
+    const sa = $("#c-ancre-sa").value, jr = $("#c-ancre-j").value, ad = $("#c-ancre-date").value;
+    S.ancreDate = (ad && sa !== "") ? ad : "";
+    S.ancreJours = (ad && sa !== "") ? (Number(sa)*7 + Number(jr||0)) : null;
+    const g2 = grossesse();
+    S.terme = memo.t; S.ancreDate = memo.d; S.ancreJours = memo.j;
+
     const el = $("#apercu-sa");
-    if(!g2){ el.textContent = "Choisissez une date pour voir l'avancement."; return; }
-    if(!g2.valide){ el.textContent = "Cette date ne correspond pas à une grossesse en cours."; return; }
+    if(!g2){ el.textContent = "Renseignez un terme ou un calage pour voir l'avancement."; return; }
+    if(!g2.valide){ el.textContent = "Ces valeurs ne correspondent pas à une grossesse en cours."; return; }
     el.innerHTML = "<b style=\"color:var(--vert);font-family:var(--serif);font-size:17px\">"+
-      g2.sa+" SA"+(g2.rj?" + "+g2.rj+" jours":"")+"</b><br>"+
+      g2.sa+" SA"+(g2.rj?" + "+g2.rj+" jours":"")+"</b> aujourd'hui<br>"+
       ["","1er","2e","3e"][g2.trimestre]+" trimestre · "+
-      (g2.reste>=0 ? g2.reste+" jours avant le terme" : "terme dépassé de "+(-g2.reste)+" jours");
+      (g2.reste>=0 ? g2.reste+" jours avant le terme" : "terme dépassé de "+(-g2.reste)+" jours")+
+      "<br><span style=\"font-size:11.5px\">"+(g2.cale
+        ? "Calculé depuis votre calage."
+        : "Calculé depuis le terme, convention 41 SA.")+"</span>";
   };
-  ch.addEventListener("input", rafraichirApercu);
+  ["c-terme","c-ancre-date","c-ancre-sa","c-ancre-j"].forEach(id=>{
+    const el = $("#"+id); if(el) el.addEventListener("input", rafraichirApercu);
+  });
   rafraichirApercu();
 }
 $("#terme").addEventListener("click", ouvrirTerme);
@@ -948,15 +1080,24 @@ $("#terme").addEventListener("click", ouvrirTerme);
 function fermerSaisie(){
   $("#voile").classList.remove("ouvert");
   $("#f-standard").style.display = "";
+  $("#f-ok").textContent = "Enregistrer";
   saisieActive = null;
 }
 $("#f-annul").addEventListener("click", fermerSaisie);
 $("#voile").addEventListener("click", e=>{ if(e.target.id === "voile") fermerSaisie(); });
 
 $("#f-ok").addEventListener("click", ()=>{
+  if(saisieActive === "__relecture"){ enregistrerRelecture(); return; }
   if(saisieActive === "__terme"){
     S.terme = $("#c-terme").value;
     S.prenom = $("#c-prenom").value.trim();
+    const _sa = $("#c-ancre-sa").value, _j = $("#c-ancre-j").value, _d = $("#c-ancre-date").value;
+    if(_d && _sa !== ""){
+      S.ancreDate = _d;
+      S.ancreJours = Number(_sa)*7 + Number(_j||0);
+    }else{
+      S.ancreDate = ""; S.ancreJours = null;
+    }
     S.reglagesSale = 1;
     $("#in-terme").value = S.terme || "";
     $("#in-prenom").value = S.prenom || "";
@@ -968,7 +1109,7 @@ $("#f-ok").addEventListener("click", ()=>{
     const el = $("#c-"+c.k), val = el ? el.value.trim() : "";
     if(c.req && !val){ el.focus(); el.style.borderColor = "var(--corail)"; return; }
     if(val !== "") v[c.k] = c.t === "number" ? Number(val.replace(",",".")) : val;
-    if(c.t === "choix" && !val) v[c.k] = c.options[0][0];
+    if(c.t === "choix" && !val) v[c.k] = (c.options === "__BIO__") ? Object.keys(BIO)[0] : c.options[0][0];
   }
   const q = $("#f-quand").value;
   const m = { id:uid(), type:saisieActive, at:(q?new Date(q):new Date()).toISOString(),
@@ -1040,13 +1181,13 @@ document.addEventListener("click", ev=>{
   if(p){
     periode = +p.dataset.per;
     document.querySelectorAll("[data-per]").forEach(x=>x.classList.toggle("on", +x.dataset.per === periode));
-    peindreRapport(); return;
+    peindreRapport(); peindreGraphiques(); return;
   }
   const f = ev.target.closest("[data-filtre]");
   if(f){
     const k = f.dataset.filtre;
     actifs.has(k) ? actifs.delete(k) : actifs.add(k);
-    majFiltres(); peindreRapport();
+    majFiltres(); peindreRapport(); peindreGraphiques();
   }
 });
 function majFiltres(){
@@ -1707,6 +1848,343 @@ async function copierPourClaude(){
   setTimeout(()=>{ b.textContent = "Copier le relevé pour Claude"; }, 4000);
 }
 
+/* =====================================================================
+   BANDEAU D'AVANCEMENT — semaines d'aménorrhée, recalculées à chaque rendu
+   ===================================================================== */
+function peindreBandeau(){
+  const el = document.getElementById("bandeau");
+  if(!el) return;
+  const g = grossesse();
+
+  if(!g || !g.valide){
+    el.className = "bandeau manque";
+    el.innerHTML =
+      '<div class="b-titre">Terme non renseigné</div>'+
+      '<div class="b-sous">Les semaines d\'aménorrhée ne peuvent pas être calculées, '+
+      'et <b>les alertes cliniques restent inactives</b> tant que le terme n\'est pas saisi. '+
+      'Touchez ici pour l\'indiquer.</div>';
+    el.onclick = ouvrirTerme;
+    return;
+  }
+
+  const pct = Math.max(0, Math.min(100, (g.jours/280)*100));
+  el.className = "bandeau";
+  el.onclick = ouvrirTerme;
+  el.innerHTML =
+    '<div class="b-haut">'+
+      '<div><div class="b-sa">'+g.sa+' <span>SA</span>'+(g.rj?' + '+g.rj+' <span>j</span>':'')+'</div>'+
+      '<div class="b-sous">'+(g.cale?'':'')+["","1er","2e","3e"][g.trimestre]+' trimestre · '+
+        (g.reste>=0 ? g.reste+' jours avant le terme' : 'terme dépassé de '+(-g.reste)+' jours')+'</div></div>'+
+      '<div class="b-terme">terme<br><b>'+dateCourte(g.terme)+'</b></div>'+
+    '</div>'+
+    '<div class="b-piste"><div class="b-jauge" style="width:'+pct.toFixed(1)+'%"></div>'+
+      ['','',''].map((_,i)=>'<i style="left:'+[(14/40*100),(28/40*100),(37/40*100)][i]+'%"></i>').join("")+
+    '</div>';
+}
+
+/* =====================================================================
+   GRAPHIQUES D'ÉVOLUTION — SVG calculé localement, aucune bibliothèque
+   ===================================================================== */
+function courbe(points, opts){
+  // points : [{t: Date, v: nombre}] ; opts : {couleur, unite, refBas, refHaut, titre}
+  const L = 320, H = 120, mg = {g:38, d:10, h:12, b:22};
+  if(!points.length) return "";
+  const ts = points.map(p=>p.t.getTime()), vs = points.map(p=>p.v);
+  let vmin = Math.min(...vs), vmax = Math.max(...vs);
+  if(opts.refBas != null) vmin = Math.min(vmin, opts.refBas);
+  if(opts.refHaut != null) vmax = Math.max(vmax, opts.refHaut);
+  const marge = (vmax - vmin) * .18 || Math.max(.5, Math.abs(vmax)*.05);
+  vmin -= marge; vmax += marge;
+  const tmin = Math.min(...ts), tmax = Math.max(...ts);
+  const X = t => mg.g + ((tmax===tmin ? .5 : (t-tmin)/(tmax-tmin))) * (L-mg.g-mg.d);
+  const Y = v => mg.h + (1 - (v-vmin)/(vmax-vmin || 1)) * (H-mg.h-mg.b);
+
+  let s = '<svg viewBox="0 0 '+L+' '+H+'" class="graphe" role="img" aria-label="'+ech(opts.titre)+'">';
+
+  // zone de référence
+  if(opts.refBas != null && opts.refHaut != null){
+    const y1 = Y(opts.refHaut), y2 = Y(opts.refBas);
+    s += '<rect x="'+mg.g+'" y="'+y1.toFixed(1)+'" width="'+(L-mg.g-mg.d)+'" height="'+Math.max(0,(y2-y1)).toFixed(1)+
+         '" fill="var(--lavande-voile)"/>';
+  }
+  if(opts.refHaut != null){
+    s += '<line x1="'+mg.g+'" y1="'+Y(opts.refHaut).toFixed(1)+'" x2="'+(L-mg.d)+'" y2="'+Y(opts.refHaut).toFixed(1)+
+         '" stroke="var(--alerte)" stroke-width="1" stroke-dasharray="3 3" opacity=".55"/>';
+  }
+  // axes
+  s += '<line x1="'+mg.g+'" y1="'+(H-mg.b)+'" x2="'+(L-mg.d)+'" y2="'+(H-mg.b)+'" stroke="var(--bord)" stroke-width="1"/>';
+  [vmax, (vmax+vmin)/2, vmin].forEach(v=>{
+    s += '<text x="'+(mg.g-6)+'" y="'+(Y(v)+3.5).toFixed(1)+'" text-anchor="end" class="g-ax">'+
+         (Math.abs(v)>=100 ? Math.round(v) : v.toFixed(1))+'</text>';
+  });
+  // courbe
+  const d = points.map((p,i)=>(i?'L':'M')+X(p.t.getTime()).toFixed(1)+' '+Y(p.v).toFixed(1)).join(' ');
+  s += '<path d="'+d+'" fill="none" stroke="'+opts.couleur+'" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/>';
+  points.forEach(p=>{
+    const hors = (opts.refHaut != null && p.v >= opts.refHaut) || (opts.refBas != null && p.v <= opts.refBas);
+    s += '<circle cx="'+X(p.t.getTime()).toFixed(1)+'" cy="'+Y(p.v).toFixed(1)+'" r="'+(hors?4:3)+'" fill="'+
+         (hors ? 'var(--alerte)' : opts.couleur)+'"/>';
+  });
+  // dates aux extrémités
+  s += '<text x="'+mg.g+'" y="'+(H-6)+'" class="g-ax">'+dateCourte(points[0].t).slice(0,5)+'</text>';
+  if(points.length>1)
+    s += '<text x="'+(L-mg.d)+'" y="'+(H-6)+'" text-anchor="end" class="g-ax">'+dateCourte(points[points.length-1].t).slice(0,5)+'</text>';
+  s += '</svg>';
+  return s;
+}
+
+/* Analyses biologiques suivies. Les bornes servent à situer visuellement,
+   elles sont indicatives et l'interprétation revient au laboratoire. */
+const BIO = {
+  /* --- numeration, anemie --- */
+  hemoglobine: {nom:"Hémoglobine",        unite:"g/dL",  bas:10.5, haut:null, coul:"#B03A30", grp:"Numération"},
+  hematocrite: {nom:"Hématocrite",        unite:"%",     bas:32,   haut:null, coul:"#C0503F", grp:"Numération"},
+  vgm:         {nom:"VGM",                unite:"fL",    bas:80,   haut:100,  coul:"#A85520", grp:"Numération"},
+  ferritine:   {nom:"Ferritine",          unite:"µg/L",  bas:15,   haut:null, coul:"#8F5F0E", grp:"Numération"},
+  plaquettes:  {nom:"Plaquettes",         unite:"G/L",   bas:150,  haut:450,  coul:"#6E45C0", grp:"Numération"},
+  leucocytes:  {nom:"Leucocytes",         unite:"G/L",   bas:4,    haut:15,   coul:"#25708A", grp:"Numération"},
+  /* --- diabete gestationnel (HGPO 24-28 SA) --- */
+  glycemie_j:  {nom:"Glycémie à jeun",    unite:"g/L",   bas:null, haut:0.92, coul:"#D98F6B", grp:"Glycémie"},
+  hgpo_1h:     {nom:"HGPO à 1 heure",     unite:"g/L",   bas:null, haut:1.80, coul:"#C97B4E", grp:"Glycémie"},
+  hgpo_2h:     {nom:"HGPO à 2 heures",    unite:"g/L",   bas:null, haut:1.53, coul:"#B86C3E", grp:"Glycémie"},
+  hba1c:       {nom:"HbA1c",              unite:"%",     bas:null, haut:6,    coul:"#A05B2E", grp:"Glycémie"},
+  /* --- pre-eclampsie, rein, foie --- */
+  proteinurie: {nom:"Protéinurie",        unite:"g/24h", bas:null, haut:0.3,  coul:"#A3416B", grp:"Rein et foie"},
+  creatinine:  {nom:"Créatinine",         unite:"mg/L",  bas:null, haut:9,    coul:"#96385E", grp:"Rein et foie"},
+  uricemie:    {nom:"Acide urique",       unite:"mg/L",  bas:null, haut:60,   coul:"#8A3054", grp:"Rein et foie"},
+  asat:        {nom:"ASAT",               unite:"UI/L",  bas:null, haut:35,   coul:"#7E2A4B", grp:"Rein et foie"},
+  alat:        {nom:"ALAT",               unite:"UI/L",  bas:null, haut:35,   coul:"#722541", grp:"Rein et foie"},
+  acides_bil:  {nom:"Acides biliaires",   unite:"µmol/L",bas:null, haut:10,   coul:"#66203A", grp:"Rein et foie"},
+  /* --- sérologies suivies dans le temps --- */
+  toxo_igg:    {nom:"Toxoplasmose IgG",   unite:"UI/mL", bas:null, haut:null, coul:"#1F7A6C", grp:"Sérologies"},
+  toxo_igm:    {nom:"Toxoplasmose IgM",   unite:"indice",bas:null, haut:null, coul:"#2E6E4E", grp:"Sérologies"},
+  rubeole_igg: {nom:"Rubéole IgG",        unite:"UI/mL", bas:null, haut:null, coul:"#38826A", grp:"Sérologies"},
+  /* --- autres --- */
+  tsh:         {nom:"TSH",                unite:"mUI/L", bas:0.1,  haut:4,    coul:"#25708A", grp:"Autres"},
+  vitamine_d:  {nom:"Vitamine D",         unite:"ng/mL", bas:20,   haut:null, coul:"#2F6FA8", grp:"Autres"},
+  autre:       {nom:"Autre analyse",      unite:"",      bas:null, haut:null, coul:"#5F6B65", grp:"Autres"}
+};
+
+function peindreGraphiques(){
+  const zone = document.getElementById("graphiques");
+  if(!zone) return;
+  const lim = periode ? Date.now() - periode*86400000 : 0;
+  const dansPeriode = m => new Date(m.at).getTime() >= lim;
+  const blocs = [];
+
+  const carte = (titre, sousTitre, svg, note) =>
+    '<div class="g-carte"><div class="g-titre">'+ech(titre)+'</div>'+
+    (sousTitre?'<div class="g-sous">'+ech(sousTitre)+'</div>':'')+svg+
+    (note?'<div class="g-note">'+ech(note)+'</div>':'')+'</div>';
+
+  // --- Tension : deux courbes superposées ---
+  const tens = vivantesM().filter(m=>m.type==="tension" && dansPeriode(m))
+    .sort((a,b)=>new Date(a.at)-new Date(b.at));
+  if(tens.length >= 2){
+    const sys = tens.map(m=>({t:new Date(m.at), v:+m.v.sys}));
+    const dia = tens.map(m=>({t:new Date(m.at), v:+m.v.dia}));
+    blocs.push(carte("Tension — systolique", tens.length+" relevés",
+      courbe(sys, {couleur:"#6E45C0", refHaut:140, titre:"Systolique"}),
+      "Ligne pointillée : 140 mmHg."));
+    blocs.push(carte("Tension — diastolique", tens.length+" relevés",
+      courbe(dia, {couleur:"#25708A", refHaut:90, titre:"Diastolique"}),
+      "Ligne pointillée : 90 mmHg."));
+  }
+
+  // --- Poids ---
+  const poids = vivantesM().filter(m=>m.type==="poids" && dansPeriode(m))
+    .sort((a,b)=>new Date(a.at)-new Date(b.at));
+  if(poids.length >= 2){
+    const pts = poids.map(m=>({t:new Date(m.at), v:+m.v.kg}));
+    const d = pts[pts.length-1].v - pts[0].v;
+    blocs.push(carte("Poids", (d>=0?"+":"")+d.toFixed(1)+" kg sur la période",
+      courbe(pts, {couleur:"#A3416B", titre:"Poids"}), null));
+  }
+
+  // --- Analyses biologiques, une courbe par analyse ---
+  const bios = vivantesM().filter(m=>m.type==="biologie" && dansPeriode(m));
+  const parAnalyse = {};
+  bios.forEach(m=>{
+    const k = m.v.analyse || "autre";
+    (parAnalyse[k] = parAnalyse[k] || []).push(m);
+  });
+  Object.keys(parAnalyse).sort().forEach(k=>{
+    const def = BIO[k] || BIO.autre;
+    const l = parAnalyse[k].sort((a,b)=>new Date(a.at)-new Date(b.at));
+    const pts = l.map(m=>({t:new Date(m.at), v:+m.v.valeur}));
+    const dernier = pts[pts.length-1];
+    const nom = k === "autre" ? (l[l.length-1].v.libelle || "Autre analyse") : def.nom;
+    if(pts.length === 1){
+      blocs.push(carte(nom, "1 seul résultat — "+dernier.v+" "+(def.unite||""),
+        '<div class="g-vide">Une deuxième prise de sang fera apparaître la courbe.</div>', null));
+    }else{
+      const evol = dernier.v - pts[0].v;
+      blocs.push(carte(nom,
+        pts.length+" résultats · dernier "+dernier.v+" "+(def.unite||"")+
+        " · "+(evol>=0?"+":"")+(+evol.toFixed(2))+" sur la période",
+        courbe(pts, {couleur:def.coul, refBas:def.bas, refHaut:def.haut, titre:nom}),
+        def.bas!=null || def.haut!=null
+          ? "Zone claire : intervalle usuel indicatif"+
+            (def.bas!=null?", plancher "+def.bas:"")+(def.haut!=null?", plafond "+def.haut:"")+
+            " "+(def.unite||"")+". Seul le laboratoire interprète."
+          : null));
+    }
+  });
+
+  zone.innerHTML = blocs.length
+    ? blocs.join("")
+    : '<div class="rien">Pas encore assez de mesures pour tracer une courbe. '+
+      'Il en faut au moins deux du même type sur la période choisie.</div>';
+}
+
+/* =====================================================================
+   IMPORT D'UN COMPTE RENDU PAR PHOTO
+   L'image n'est jamais enregistrée : elle est réduite, envoyée, oubliée.
+   Rien n'est écrit dans la base sans relecture et validation explicite.
+   ===================================================================== */
+
+/* Réduction côté téléphone : une photo d'iPhone fait 4 Mo, ce qui échouerait
+   au transfert et consommerait le quota pour rien. 1600 px suffisent à lire
+   un compte rendu. */
+function reduireImage(fichier, maxCote){
+  return new Promise((resolve, reject)=>{
+    const lecteur = new FileReader();
+    lecteur.onerror = () => reject(new Error("Lecture du fichier impossible"));
+    lecteur.onload = () => {
+      const img = new Image();
+      img.onerror = () => reject(new Error("Ce fichier n'est pas une image lisible"));
+      img.onload = () => {
+        let {width:w, height:h} = img;
+        const ech = Math.min(1, maxCote/Math.max(w,h));
+        w = Math.round(w*ech); h = Math.round(h*ech);
+        const c = document.createElement("canvas");
+        c.width = w; c.height = h;
+        const ctx = c.getContext("2d");
+        ctx.fillStyle = "#fff"; ctx.fillRect(0,0,w,h);
+        ctx.drawImage(img, 0, 0, w, h);
+        const url = c.toDataURL("image/jpeg", 0.78);
+        resolve({ base64: url.split(",")[1], mime: "image/jpeg", largeur:w, hauteur:h });
+      };
+      img.src = lecteur.result;
+    };
+    lecteur.readAsDataURL(fichier);
+  });
+}
+
+let lecturePhoto = null;   // résultat en attente de relecture
+
+async function lancerPhoto(fichier){
+  const zone = document.getElementById("etat-photo");
+  if(!SESSION){
+    zone.innerHTML = '<div class="recap-msg mal">Connectez-vous pour utiliser cette fonction.</div>';
+    return;
+  }
+  zone.innerHTML = '<div class="recap-msg">Préparation de l\'image…</div>';
+  try{
+    const img = await reduireImage(fichier, 1600);
+    zone.innerHTML = '<div class="recap-msg">Lecture du compte rendu…</div>';
+
+    const r = await api("/functions/v1/recapitulatif", {
+      method:"POST",
+      headers:{ "content-type":"application/json" },
+      body: JSON.stringify({ mode:"photo", image: img.base64, mime: img.mime })
+    });
+    const d = await r.json().catch(()=>({}));
+
+    if(!r.ok || d.erreur){
+      zone.innerHTML = '<div class="recap-msg mal">'+ech(d.erreur || ("Erreur "+r.status))+'</div>';
+      return;
+    }
+    if(!d.analyses || !d.analyses.length){
+      zone.innerHTML = '<div class="recap-msg mal">Aucun résultat chiffré n\'a été reconnu. '+
+        'Vérifiez que la photo est nette, bien éclairée, et que le tableau des résultats est entier dans le cadre.</div>';
+      return;
+    }
+    lecturePhoto = d;
+    zone.innerHTML = "";
+    ouvrirRelecture();
+  }catch(e){
+    zone.innerHTML = '<div class="recap-msg mal">'+ech(String(e.message||e).slice(0,160))+'</div>';
+  }
+}
+
+/* Écran de relecture : chaque valeur est modifiable, rien n'est enregistré
+   tant que la validation n'a pas été faite. */
+function ouvrirRelecture(){
+  saisieActive = "__relecture";
+  const d = lecturePhoto;
+  const douteuses = d.analyses.filter(a=>a.confiance !== "haute").length;
+
+  $("#f-titre").textContent = "Vérifiez avant d'enregistrer";
+
+  let h = '<div class="relu-avert">Ces valeurs ont été lues automatiquement sur la photo. '+
+    'Une lecture peut se tromper d\'un chiffre ou de virgule : <b>comparez chaque ligne au compte rendu papier</b> '+
+    'avant d\'enregistrer.'+
+    (douteuses ? ' '+douteuses+' valeur'+(douteuses>1?'s sont signalées':' est signalée')+' comme incertaine'+(douteuses>1?'s':'')+'.' : '')+
+    '</div>';
+
+  h += '<label class="champ"><span>Date du prélèvement</span>'+
+       '<input type="date" id="c-photo-date" value="'+(d.date||"")+'"></label>';
+  if(!d.date) h += '<div class="relu-note">Aucune date n\'a été trouvée sur le document : indiquez-la.</div>';
+
+  h += '<div class="relu-liste">';
+  d.analyses.forEach((a,i)=>{
+    const def = BIO[a.analyse] || BIO.autre;
+    const nom = a.analyse === "autre" ? (a.libelle || "Analyse") : def.nom;
+    h += '<div class="relu-ligne'+(a.confiance!=="haute"?' doute':'')+'">'+
+      '<label class="relu-case"><input type="checkbox" id="c-ph-ok-'+i+'" checked> '+
+        '<span class="relu-nom">'+ech(nom)+'</span></label>'+
+      '<div class="relu-val">'+
+        '<input type="number" step="0.001" inputmode="decimal" id="c-ph-v-'+i+'" value="'+a.valeur+'">'+
+        '<span class="relu-unite">'+ech(a.unite || def.unite || "")+'</span>'+
+      '</div>'+
+      (a.confiance!=="haute" ? '<div class="relu-doute">Lecture incertaine — vérifiez ce chiffre</div>' : '')+
+      (a.analyse === "autre" && a.libelle ? '<div class="relu-src">Lu : '+ech(a.libelle)+'</div>' : '')+
+    '</div>';
+  });
+  h += '</div>';
+
+  $("#f-champs").innerHTML = h;
+  $("#f-standard").style.display = "none";
+  $("#f-ok").textContent = "Enregistrer les résultats cochés";
+  $("#voile").classList.add("ouvert");
+}
+
+function enregistrerRelecture(){
+  const d = lecturePhoto;
+  if(!d) return;
+  const dateStr = $("#c-photo-date").value;
+  if(!dateStr){
+    const el = $("#c-photo-date");
+    el.style.borderColor = "var(--alerte)"; el.focus();
+    return;
+  }
+  const quand = new Date(dateStr+"T09:00:00");
+  let n = 0;
+  d.analyses.forEach((a,i)=>{
+    if(!$("#c-ph-ok-"+i).checked) return;
+    const val = Number(String($("#c-ph-v-"+i).value).replace(",", "."));
+    if(!isFinite(val)) return;
+    const m = {
+      id: uid(), type: "biologie", at: quand.toISOString(),
+      v: { analyse: a.analyse, valeur: val, libelle: a.libelle || "" },
+      note: "Importé depuis une photo, relu et validé",
+      supprime: false
+    };
+    marquer(m);
+    S.mesures.push(m);
+    n++;
+  });
+  lecturePhoto = null;
+  save();
+  fermerSaisie();
+  toutPeindre();
+  planifier();
+  const zone = document.getElementById("etat-photo");
+  if(zone) zone.innerHTML = '<div class="recap-msg">'+n+' résultat'+(n>1?"s":"")+
+    ' enregistré'+(n>1?"s":"")+' au '+dateCourte(quand)+'.</div>';
+}
+
 /* ============ navigation ============ */
 const ORDRE = ["maintenant","agenda","rapport","donnees"];
 let vueActive = "maintenant";
@@ -1793,7 +2271,7 @@ document.querySelectorAll("nav.barre button").forEach(b=>
 
 /* ============ démarrage ============ */
 function signature(){
-  let s = (S.terme||"")+"~"+(S.prenom||"")+"~"+(S.encours||"");
+  let s = (S.terme||"")+"~"+(S.prenom||"")+"~"+(S.encours||"")+"~"+(S.ancreDate||"")+"~"+(S.ancreJours==null?"":S.ancreJours);
   for(const c of S.contractions) s += "|"+c.id+c.secondes+(c.supprime?1:0);
   for(const m of S.mesures) s += "|"+m.id+(m.maj||"")+(m.supprime?1:0);
   return s;
@@ -1802,10 +2280,17 @@ function toutPeindre(){
   peindreChrono(); peindreRuban(); peindreStats(); peindreJour();
   peindreCalendrier(); peindreRapport(); peindreTerme();
   peindreStockage(); peindreSync(); peindreEtatSync(); peindreAlertes();
+  peindreBandeau(); peindreGraphiques();
 }
 document.getElementById("btn-synth").addEventListener("click", peindreSynthese);
 document.getElementById("btn-copier").addEventListener("click", copierPourClaude);
 document.getElementById("btn-ia").addEventListener("click", analyseIA);
+document.getElementById("btn-photo").addEventListener("click", ()=>$("#fichier-photo").click());
+$("#fichier-photo").addEventListener("change", e=>{
+  const f = e.target.files[0];
+  e.target.value = "";
+  if(f) lancerPhoto(f);
+});
 if(S.encours) tic = setInterval(peindreChrono, 250);
 majFiltres();
 toutPeindre();
@@ -1822,7 +2307,7 @@ document.addEventListener("visibilitychange", ()=>{
   if(document.hidden) return;
   // Rafraichissement leger : rien de ce qui suit ne reconstruit le calendrier
   // ni le rapport, donc plus de scintillement au retour sur l'onglet.
-  peindreChrono(); peindreRuban(); peindreStats(); peindreAlertes(); peindreTerme();
+  peindreChrono(); peindreRuban(); peindreStats(); peindreAlertes(); peindreTerme(); peindreBandeau();
   if(SESSION) synchroniser();
 });
 
