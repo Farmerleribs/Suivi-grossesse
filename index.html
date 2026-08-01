@@ -369,6 +369,7 @@ select{appearance:none;-webkit-appearance:none;background-image:url("data:image/
         et des questions à poser. Il décrit vos mesures, il ne les interprète pas.
       </div>
       <button class="btn fort" id="btn-synth">Générer le récapitulatif</button>
+      <button class="btn" id="btn-ia">Analyse par IA</button>
       <button class="btn" id="btn-copier">Copier le relevé pour Claude</button>
       <div id="recap"></div>
     </div>
@@ -1603,6 +1604,61 @@ function peindreSynthese(){
   '</div>';
 }
 
+/* ===== Analyse par IA =====
+   LECTURE SEULE. Cette fonction ne modifie ni S, ni le stockage local,
+   ni la base : elle lit le relevé, l'envoie, et affiche la réponse.
+   Aucun appel à save(), marquer(), planifier() ou synchroniser(). */
+async function analyseIA(){
+  const b = document.getElementById("btn-ia");
+  const zone = document.getElementById("recap");
+  if(!SESSION){
+    zone.innerHTML = '<div class="recap-msg mal">Connectez-vous pour utiliser cette fonction.</div>';
+    return;
+  }
+  const releve = releveTexte();          // lecture pure
+  if(!releve){
+    zone.innerHTML = '<div class="recap-msg">Aucune mesure sur cette période.</div>';
+    return;
+  }
+  b.disabled = true; b.textContent = "Analyse en cours…";
+  zone.innerHTML = '<div class="recap-msg">Envoi du relevé au modèle…</div>';
+  try{
+    const r = await api("/functions/v1/recapitulatif", {
+      method:"POST",
+      headers:{ "content-type":"application/json" },
+      body: JSON.stringify({ releve: releve })
+    });
+    const d = await r.json().catch(()=>({}));
+    if(!r.ok || d.erreur){
+      zone.innerHTML = '<div class="recap-msg mal">'+((d.erreur||("Erreur "+r.status))+"").replace(/</g,"&lt;")+'</div>';
+    }else{
+      const lignes = (d.texte||"").split("\n").map(x=>x.trim()).filter(Boolean);
+      let html = "", ul = false;
+      lignes.forEach(x=>{
+        const t = x.replace(/</g,"&lt;");
+        if(/^(Ce qui a chang|À signaler|A signaler|Questions à poser|Questions a poser)/i.test(t)){
+          if(ul){ html += "</ul>"; ul = false; }
+          html += "<h4>"+t.replace(/\s*:\s*$/,"")+"</h4>";
+        }else if(/^[-•]/.test(t)){
+          if(!ul){ html += "<ul>"; ul = true; }
+          html += "<li>"+t.replace(/^[-•]\s*/,"")+"</li>";
+        }else{
+          if(ul){ html += "</ul>"; ul = false; }
+          html += "<p>"+t+"</p>";
+        }
+      });
+      if(ul) html += "</ul>";
+      zone.innerHTML = '<div class="recap-txt"><div class="recap-ctx">Rédigé par '+
+        (d.fournisseur||"un modèle")+' — texte généré, à relire. Les seuils cliniques de l\'application '+
+        'restent calculés séparément et ne dépendent pas de ce texte.</div>'+html+'</div>';
+    }
+  }catch(e){
+    zone.innerHTML = '<div class="recap-msg mal">Appel impossible : '+String(e.message||e).slice(0,140).replace(/</g,"&lt;")+'</div>';
+  }finally{
+    b.disabled = false; b.textContent = "Analyse par IA";
+  }
+}
+
 /* ===== Copier le relevé pour le coller dans l'app Claude ===== */
 function texteAColler(){
   const s = synthese();
@@ -1735,6 +1791,7 @@ function toutPeindre(){
 }
 document.getElementById("btn-synth").addEventListener("click", peindreSynthese);
 document.getElementById("btn-copier").addEventListener("click", copierPourClaude);
+document.getElementById("btn-ia").addEventListener("click", analyseIA);
 if(S.encours) tic = setInterval(peindreChrono, 250);
 majFiltres();
 toutPeindre();
