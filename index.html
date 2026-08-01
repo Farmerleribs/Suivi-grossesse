@@ -4,13 +4,14 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover, user-scalable=no">
 <meta name="theme-color" content="#FAF2EA">
+<meta http-equiv="Content-Security-Policy" content="default-src 'none'; script-src 'unsafe-inline'; style-src 'unsafe-inline' https://fonts.googleapis.com; font-src https://fonts.gstatic.com; connect-src https://vrqndbjyinspliyzimoz.supabase.co; img-src data:; base-uri 'none'; form-action 'none'; frame-ancestors 'none'">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="default">
 <meta name="apple-mobile-web-app-title" content="Suivi">
 <title>Suivi — journal de grossesse</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,400;9..144,500;9..144,600;9..144,700&family=DM+Sans:wght@400;500;700&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,400;9..144,500;9..144,600;9..144,700&family=DM+Sans:wght@400;500;700&display=optional" rel="stylesheet">
 <style>
 :root{
   --creme:#FAF2EA; --creme-2:#F4E9DD; --blanc:#FFFFFF;
@@ -595,12 +596,14 @@ async function synchroniser(){
   if(!CONFIGURE || !SESSION || enCours) return;
   if(!navigator.onLine){ etatSync = "hors"; motSync = "hors ligne"; peindreSync(); return; }
   enCours = true; etatSync = "cours"; peindreSync();
+  const avant = signature();
   try{
     await pousser();
     await tirer();
     S.dernSync = new Date().toISOString();
     etatSync = "ok"; motSync = "";
-    save(); toutPeindre();
+    save();
+    if(signature() !== avant) toutPeindre();
   }catch(e){
     etatSync = navigator.onLine ? "err" : "hors";
     motSync = String(e.message || e).slice(0,90);
@@ -648,6 +651,12 @@ const CATS = {
   mouvements: {nom:"Mouvements",  coul:"#25708A"},
   symptome:   {nom:"Symptôme",    coul:"#B03A30"}
 };
+
+/* Échappement HTML : le texte saisi (symptômes, notes, prénom) ne doit jamais
+   être interprété comme du balisage. Défense en profondeur — les deux téléphones
+   partagent la même base, une saisie sur l'un s'affiche sur l'autre. */
+const ech = s => String(s==null?"":s).replace(/[&<>"']/g,
+  c => ({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
 
 const p2 = n => String(n).padStart(2,"0");
 function duree(s){ s = Math.max(0, Math.round(s)); return p2(Math.floor(s/60))+":"+p2(s%60); }
@@ -817,9 +826,9 @@ function ligneHTML(e){
   const c = CATS[e.type] || {nom:e.type, coul:"#8A8FA3"};
   const meta = [];
   if(e.interv != null) meta.push("intervalle "+ecart(e.interv));
-  if(e.note) meta.push(e.note);
+  if(e.note) meta.push(ech(e.note));
   return '<div class="ligne"><div class="h">'+heure(e.at)+'</div><div class="corps">'+
-    '<div class="quoi"><span style="color:'+c.coul+'">'+c.nom+'</span> · <b'+(e.alerte?' class="alerte"':'')+'>'+e.valeur+'</b></div>'+
+    '<div class="quoi"><span style="color:'+c.coul+'">'+c.nom+'</span> · <b'+(e.alerte?' class="alerte"':'')+'>'+ech(e.valeur)+'</b></div>'+
     (meta.length?'<div class="meta">'+meta.join(" · ")+'</div>':'')+
     '</div><button class="sup" data-sup="'+e.id+'" data-t="'+e.type+'" aria-label="Supprimer">×</button></div>';
 }
@@ -829,7 +838,6 @@ function peindreJour(){
   const evts = tousEvenements().filter(e=>jourCle(e.at) === auj);
   $("#liste-jour").innerHTML = evts.length ? evts.map(ligneHTML).join("")
     : '<div class="rien">Rien de noté aujourd\'hui.<br>Le premier geste, c\'est le grand cercle au-dessus.</div>';
-  if(typeof echelonner === "function") echelonner($("#liste-jour"));
 }
 
 document.addEventListener("click", ev=>{
@@ -912,7 +920,7 @@ function ouvrirTerme(){
     '<label class="champ"><span>Date du terme prévu (DPA)</span>'+
     '<input type="date" id="c-terme" value="'+(S.terme||"")+'"></label>'+
     '<label class="champ"><span>Prénom (en-tête du rapport)</span>'+
-    '<input type="text" id="c-prenom" placeholder="Facultatif" value="'+(S.prenom||"").replace(/"/g,"&quot;")+'"></label>'+
+    '<input type="text" id="c-prenom" placeholder="Facultatif" value="'+ech(S.prenom)+'"></label>'+
     '<div id="apercu-sa" style="background:var(--lavande-voile);border:1px solid var(--lavande-pale);'+
     'border-radius:var(--ri);padding:15px 17px;font-size:13.5px;color:var(--doux);line-height:1.7;margin-bottom:15px"></div>'+
     '<div style="font-size:12.5px;color:var(--doux);line-height:1.6;margin-bottom:4px">'+
@@ -1057,7 +1065,7 @@ function peindreRapport(){
   const evts = tousEvenements().filter(e=>actifs.has(e.type) && e.at.getTime() >= lim);
   const per = PERIODES.find(p=>p.v === periode);
   $("#entete-impression").innerHTML =
-    '<div style="font-family:var(--serif);font-size:17pt;margin-bottom:2px">'+(S.prenom || "Journal de suivi")+'</div>'+
+    '<div style="font-family:var(--serif);font-size:17pt;margin-bottom:2px">'+ech(S.prenom || "Journal de suivi")+'</div>'+
     '<div style="font-size:10pt;color:#444;margin-bottom:14px">Période : '+per.l+' — édité le '+dateCourte(new Date())+
     ' à '+heure(new Date())+(S.terme?' — terme prévu le '+dateCourte(new Date(S.terme+"T12:00:00")):'')+'</div>';
 
@@ -1121,9 +1129,9 @@ function peindreRapport(){
   if(!evts.length){ t.innerHTML = ""; return; }
   t.innerHTML = '<thead><tr><th>Date</th><th>Heure</th><th>Catégorie</th><th>Valeur</th><th>Durée</th><th>Intervalle</th><th>Note</th></tr></thead><tbody>'+
     evts.map(e=>'<tr><td class="num">'+dateCourte(e.at)+'</td><td class="num">'+heure(e.at)+'</td><td>'+CATS[e.type].nom+'</td>'+
-      '<td class="num'+(e.alerte?' alerte':'')+'">'+e.valeur+'</td>'+
+      '<td class="num'+(e.alerte?' alerte':'')+'">'+ech(e.valeur)+'</td>'+
       '<td class="num">'+(e.duree!=null?dureeCourte(e.duree):"—")+'</td>'+
-      '<td class="num">'+(e.interv!=null?ecart(e.interv):"—")+'</td><td>'+(e.note||"—")+'</td></tr>').join("")+'</tbody>';
+      '<td class="num">'+(e.interv!=null?ecart(e.interv):"—")+'</td><td>'+ech(e.note||"—")+'</td></tr>').join("")+'</tbody>';
 }
 $("#btn-imprimer").addEventListener("click", ()=>window.print());
 
@@ -1572,7 +1580,7 @@ function synthese(){
     const compte = {};
     liste.forEach(s=>{ const k=s.trim(); compte[k]=(compte[k]||0)+1; });
     const tri = Object.entries(compte).sort((a,b)=>b[1]-a[1]);
-    change.push("Symptômes notés : "+tri.map(([s,n])=>s+(n>1?" ("+n+"×)":"")).join(", ")+".");
+    change.push("Symptômes notés : "+tri.map(([s,n])=>ech(s)+(n>1?" ("+n+"×)":"")).join(", ")+".");
     const rouges = new Set();
     par.symptome.forEach(e=>{
       const txt = normaliser((vM(e.id).v.txt||"")+" "+(e.note||""));
@@ -1784,6 +1792,12 @@ document.querySelectorAll("nav.barre button").forEach(b=>
 })();
 
 /* ============ démarrage ============ */
+function signature(){
+  let s = (S.terme||"")+"~"+(S.prenom||"")+"~"+(S.encours||"");
+  for(const c of S.contractions) s += "|"+c.id+c.secondes+(c.supprime?1:0);
+  for(const m of S.mesures) s += "|"+m.id+(m.maj||"")+(m.supprime?1:0);
+  return s;
+}
 function toutPeindre(){
   peindreChrono(); peindreRuban(); peindreStats(); peindreJour();
   peindreCalendrier(); peindreRapport(); peindreTerme();
@@ -1798,13 +1812,17 @@ toutPeindre();
 porte(CONFIGURE && !SESSION);
 if(CONFIGURE && SESSION) synchroniser();
 
-setInterval(()=>{ if(!S.encours) peindreRuban(); peindreStats(); }, 30000);
+setInterval(()=>{ if(document.hidden) return;
+  if(!S.encours) peindreRuban();
+  peindreStats(); }, 30000);
 setInterval(()=>{ if(SESSION && !document.hidden) synchroniser(); }, 60000);
 window.addEventListener("online", ()=>{ if(SESSION) synchroniser(); });
 window.addEventListener("offline", ()=>{ etatSync = "hors"; peindreSync(); });
 document.addEventListener("visibilitychange", ()=>{
   if(document.hidden) return;
-  toutPeindre();
+  // Rafraichissement leger : rien de ce qui suit ne reconstruit le calendrier
+  // ni le rapport, donc plus de scintillement au retour sur l'onglet.
+  peindreChrono(); peindreRuban(); peindreStats(); peindreAlertes(); peindreTerme();
   if(SESSION) synchroniser();
 });
 
