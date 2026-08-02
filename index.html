@@ -317,6 +317,29 @@ select{appearance:none;-webkit-appearance:none;background-image:url("data:image/
 .relu-unite{font-size:13px;color:var(--doux);min-width:52px;font-weight:500}
 .relu-doute{font-size:12px;color:#8F5F0E;margin-top:7px;padding-left:31px;font-weight:600}
 .relu-src{font-size:12px;color:var(--doux);margin-top:6px;padding-left:31px;font-style:italic}
+
+/* ---- masquage avant envoi ---- */
+.masq-avert{background:#FDF3E6;border:1px solid #F0D2A8;border-radius:var(--ri);padding:14px 16px;
+  font-size:13px;line-height:1.6;color:#7A5A2E;margin-bottom:14px}
+.masq-conseil{font-size:13px;line-height:1.7;color:var(--doux);background:var(--creme);
+  border-radius:var(--ri);padding:15px 16px;margin-bottom:14px}
+.masq-zone{position:relative;width:100%;background:var(--vert);border-radius:var(--ri);
+  overflow:hidden;touch-action:none;margin-bottom:12px;line-height:0}
+.masq-zone img{width:100%;display:block;height:auto}
+.masq-voile{position:absolute;background:rgba(16,58,47,.82);pointer-events:none}
+.masq-cadre{position:absolute;border:2px solid var(--lavande);pointer-events:none;
+  box-shadow:0 0 0 9999px rgba(0,0,0,0)}
+.masq-cadre i{position:absolute;width:34px;height:34px;border-radius:50%;
+  background:var(--lavande);border:3px solid #fff;pointer-events:auto;touch-action:none;
+  box-shadow:0 2px 8px rgba(0,0,0,.3)}
+.masq-cadre i[data-coin="hg"]{left:-17px;top:-17px}
+.masq-cadre i[data-coin="hd"]{right:-17px;top:-17px}
+.masq-cadre i[data-coin="bg"]{left:-17px;bottom:-17px}
+.masq-cadre i[data-coin="bd"]{right:-17px;bottom:-17px}
+.masq-actions{display:flex;gap:9px;margin-bottom:16px}
+.masq-rap{flex:1;padding:11px;border-radius:999px;background:var(--creme);border:1px solid var(--bord);
+  font-size:13.5px;font-weight:600}
+.masq-rap:active{transform:scale(.96)}
 .imprime-seul{display:none}
 
 @media print{
@@ -387,8 +410,8 @@ select{appearance:none;-webkit-appearance:none;background-image:url("data:image/
     <div class="chips" id="chips"></div>
     <button class="btn photo" id="btn-photo">
       <svg viewBox="0 0 24 24" aria-hidden="true"><rect x="3" y="6" width="18" height="14" rx="4"/><circle cx="12" cy="13" r="3.6"/><path d="M9 6l1.3-2h3.4L15 6"/></svg>
-      Importer une prise de sang depuis une photo</button>
-    <input type="file" id="fichier-photo" accept="image/*" hidden>
+      Importer une prise de sang — PDF ou photo</button>
+    <input type="file" id="fichier-photo" accept="image/*,application/pdf,.pdf" hidden>
     <div id="etat-photo"></div>
     <div class="legende">Aujourd'hui</div>
     <div class="carte" id="liste-jour"></div>
@@ -1087,6 +1110,8 @@ $("#f-annul").addEventListener("click", fermerSaisie);
 $("#voile").addEventListener("click", e=>{ if(e.target.id === "voile") fermerSaisie(); });
 
 $("#f-ok").addEventListener("click", ()=>{
+  if(saisieActive === "__masquage"){ validerMasquage(); return; }
+  if(saisieActive === "__pdfavert"){ validerPdf(); return; }
   if(saisieActive === "__relecture"){ enregistrerRelecture(); return; }
   if(saisieActive === "__terme"){
     S.terme = $("#c-terme").value;
@@ -2071,23 +2096,65 @@ function reduireImage(fichier, maxCote){
   });
 }
 
+/* Un PDF part tel quel : le redimensionner n'aurait aucun sens, et le modèle
+   lit le texte du document, ce qui est plus fiable qu'une photo. */
+function lireBase64(fichier){
+  return new Promise((resolve, reject)=>{
+    const l = new FileReader();
+    l.onerror = () => reject(new Error("Lecture du fichier impossible"));
+    l.onload = () => resolve(String(l.result).split(",")[1]);
+    l.readAsDataURL(fichier);
+  });
+}
+
+function estPdf(f){
+  return f.type === "application/pdf" || /\.pdf$/i.test(f.name || "");
+}
+
+async function preparerFichier(f){
+  if(estPdf(f)){
+    if(f.size > 5 * 1024 * 1024){
+      throw new Error("Ce PDF fait "+(f.size/1048576).toFixed(1)+" Mo, c'est trop lourd. "+
+        "Envoyez-le page par page, ou photographiez la page des résultats.");
+    }
+    return { base64: await lireBase64(f), mime: "application/pdf", genre: "PDF" };
+  }
+  if(!/^image\//.test(f.type || "")){
+    throw new Error("Format non reconnu. Choisissez un PDF ou une image.");
+  }
+  const img = await reduireImage(f, 1600);
+  return { base64: img.base64, mime: img.mime, genre: "photo" };
+}
+
 let lecturePhoto = null;   // résultat en attente de relecture
 
+/* Aiguillage : aucune donnée ne part avant que la zone soit choisie. */
 async function lancerPhoto(fichier){
   const zone = document.getElementById("etat-photo");
   if(!SESSION){
     zone.innerHTML = '<div class="recap-msg mal">Connectez-vous pour utiliser cette fonction.</div>';
     return;
   }
-  zone.innerHTML = '<div class="recap-msg">Préparation de l\'image…</div>';
+  zone.innerHTML = "";
   try{
-    const img = await reduireImage(fichier, 1600);
-    zone.innerHTML = '<div class="recap-msg">Lecture du compte rendu…</div>';
+    if(estPdf(fichier)){ avertirPdf(fichier); return; }
+    if(!/^image\//.test(fichier.type || "")){
+      throw new Error("Format non reconnu. Choisissez un PDF ou une image.");
+    }
+    await ouvrirMasquage(fichier);
+  }catch(e){
+    zone.innerHTML = '<div class="recap-msg mal">'+ech(String(e.message||e).slice(0,160))+'</div>';
+  }
+}
 
+async function envoyerDocument(doc){
+  const zone = document.getElementById("etat-photo");
+  zone.innerHTML = '<div class="recap-msg">Lecture du compte rendu ('+doc.genre+')…</div>';
+  try{
     const r = await api("/functions/v1/recapitulatif", {
       method:"POST",
       headers:{ "content-type":"application/json" },
-      body: JSON.stringify({ mode:"photo", image: img.base64, mime: img.mime })
+      body: JSON.stringify({ mode:"photo", image: doc.base64, mime: doc.mime })
     });
     const d = await r.json().catch(()=>({}));
 
@@ -2097,7 +2164,7 @@ async function lancerPhoto(fichier){
     }
     if(!d.analyses || !d.analyses.length){
       zone.innerHTML = '<div class="recap-msg mal">Aucun résultat chiffré n\'a été reconnu. '+
-        'Vérifiez que la photo est nette, bien éclairée, et que le tableau des résultats est entier dans le cadre.</div>';
+        'Si c\'est une photo, vérifiez qu\'elle est nette et que le tableau des résultats est entier dans le cadre. S\'il s\'agit d\'un PDF scanné de mauvaise qualité, essayez plutôt une photo de la page.</div>';
       return;
     }
     lecturePhoto = d;
@@ -2183,6 +2250,172 @@ function enregistrerRelecture(){
   const zone = document.getElementById("etat-photo");
   if(zone) zone.innerHTML = '<div class="recap-msg">'+n+' résultat'+(n>1?"s":"")+
     ' enregistré'+(n>1?"s":"")+' au '+dateCourte(quand)+'.</div>';
+}
+
+/* =====================================================================
+   MASQUAGE AVANT ENVOI
+   Rien ne quitte le téléphone tant que la zone n'est pas choisie.
+   Seuls les pixels sélectionnés sont transmis : l'en-tête d'identité
+   n'est pas floutée, elle n'existe tout simplement pas dans l'envoi.
+   ===================================================================== */
+let masqImg = null;          // Image chargée, pleine résolution
+let masqRect = null;         // zone retenue, en fraction 0..1 de l'image
+let masqFichier = null;
+
+function chargerImage(fichier){
+  return new Promise((resolve, reject)=>{
+    const l = new FileReader();
+    l.onerror = () => reject(new Error("Lecture du fichier impossible"));
+    l.onload = () => {
+      const img = new Image();
+      img.onerror = () => reject(new Error("Ce fichier n'est pas une image lisible"));
+      img.onload = () => resolve(img);
+      img.src = l.result;
+    };
+    l.readAsDataURL(fichier);
+  });
+}
+
+async function ouvrirMasquage(fichier){
+  masqFichier = fichier;
+  masqImg = await chargerImage(fichier);
+  // Par défaut on écarte le cinquième supérieur : c'est là que les
+  // laboratoires impriment l'identité du patient.
+  masqRect = { x:0.02, y:0.22, w:0.96, h:0.74 };
+
+  saisieActive = "__masquage";
+  $("#f-titre").textContent = "Masquer avant d'envoyer";
+  $("#f-champs").innerHTML =
+    '<div class="masq-avert">Seule la zone claire sera envoyée. '+
+    'Déplacez les coins pour <b>exclure le nom, la date de naissance et l\'adresse</b>, '+
+    'et ne garder que le tableau des résultats.</div>'+
+    '<div class="masq-zone" id="masq-zone">'+
+      '<img id="masq-img" alt="Aperçu du document">'+
+      '<div class="masq-voile" id="masq-h"></div>'+
+      '<div class="masq-voile" id="masq-b"></div>'+
+      '<div class="masq-voile" id="masq-g"></div>'+
+      '<div class="masq-voile" id="masq-d"></div>'+
+      '<div class="masq-cadre" id="masq-cadre">'+
+        '<i data-coin="hg"></i><i data-coin="hd"></i><i data-coin="bg"></i><i data-coin="bd"></i>'+
+      '</div>'+
+    '</div>'+
+    '<div class="masq-actions">'+
+      '<button type="button" class="masq-rap" data-rap="haut">Exclure le haut</button>'+
+      '<button type="button" class="masq-rap" data-rap="tout">Tout garder</button>'+
+    '</div>';
+  $("#f-standard").style.display = "none";
+  $("#f-ok").textContent = "Envoyer la zone sélectionnée";
+  $("#voile").classList.add("ouvert");
+
+  const im = $("#masq-img");
+  im.src = masqImg.src;
+  im.onload = () => { dessinerMasque(); brancherPoignees(); };
+  if(im.complete){ dessinerMasque(); brancherPoignees(); }
+}
+
+function dessinerMasque(){
+  const z = $("#masq-zone"), c = $("#masq-cadre");
+  if(!z || !c) return;
+  const L = z.clientWidth, H = z.clientHeight;
+  const r = masqRect;
+  c.style.left   = (r.x*L)+"px";
+  c.style.top    = (r.y*H)+"px";
+  c.style.width  = (r.w*L)+"px";
+  c.style.height = (r.h*H)+"px";
+  const v = (id, s) => { const e = $("#"+id); if(e) Object.assign(e.style, s); };
+  v("masq-h", {left:"0px", top:"0px", width:L+"px", height:(r.y*H)+"px"});
+  v("masq-b", {left:"0px", top:((r.y+r.h)*H)+"px", width:L+"px", height:Math.max(0,(1-r.y-r.h)*H)+"px"});
+  v("masq-g", {left:"0px", top:(r.y*H)+"px", width:(r.x*L)+"px", height:(r.h*H)+"px"});
+  v("masq-d", {left:((r.x+r.w)*L)+"px", top:(r.y*H)+"px", width:Math.max(0,(1-r.x-r.w)*L)+"px", height:(r.h*H)+"px"});
+}
+
+function brancherPoignees(){
+  const z = $("#masq-zone");
+  if(!z || z.dataset.branche) return;
+  z.dataset.branche = "1";
+  const MIN = 0.12;
+
+  z.querySelectorAll("[data-coin]").forEach(p=>{
+    p.addEventListener("touchstart", e=>{ e.preventDefault(); e.stopPropagation(); }, {passive:false});
+    p.addEventListener("touchmove", e=>{
+      e.preventDefault(); e.stopPropagation();
+      const b = z.getBoundingClientRect();
+      const t = e.touches[0];
+      let fx = Math.max(0, Math.min(1, (t.clientX - b.left)/b.width));
+      let fy = Math.max(0, Math.min(1, (t.clientY - b.top)/b.height));
+      const r = masqRect, coin = p.dataset.coin;
+      const x2 = r.x + r.w, y2 = r.y + r.h;
+      if(coin === "hg"){ r.x = Math.min(fx, x2-MIN); r.y = Math.min(fy, y2-MIN); r.w = x2-r.x; r.h = y2-r.y; }
+      if(coin === "hd"){ r.w = Math.max(MIN, fx-r.x); r.y = Math.min(fy, y2-MIN); r.h = y2-r.y; }
+      if(coin === "bg"){ r.x = Math.min(fx, x2-MIN); r.w = x2-r.x; r.h = Math.max(MIN, fy-r.y); }
+      if(coin === "bd"){ r.w = Math.max(MIN, fx-r.x); r.h = Math.max(MIN, fy-r.y); }
+      dessinerMasque();
+    }, {passive:false});
+  });
+
+  z.parentElement.querySelectorAll("[data-rap]").forEach(b=>{
+    b.addEventListener("click", ()=>{
+      masqRect = b.dataset.rap === "tout"
+        ? { x:0, y:0, w:1, h:1 }
+        : { x:0.02, y:0.22, w:0.96, h:0.74 };
+      dessinerMasque();
+    });
+  });
+}
+
+/* Découpe réelle : seuls les pixels retenus sont dessinés puis encodés. */
+function decouperMasque(maxCote){
+  const r = masqRect, im = masqImg;
+  const sx = Math.round(r.x*im.naturalWidth),  sy = Math.round(r.y*im.naturalHeight);
+  const sw = Math.max(1, Math.round(r.w*im.naturalWidth));
+  const sh = Math.max(1, Math.round(r.h*im.naturalHeight));
+  const ech = Math.min(1, maxCote/Math.max(sw, sh));
+  const w = Math.max(1, Math.round(sw*ech)), h = Math.max(1, Math.round(sh*ech));
+  const c = document.createElement("canvas");
+  c.width = w; c.height = h;
+  const ctx = c.getContext("2d");
+  ctx.fillStyle = "#fff"; ctx.fillRect(0, 0, w, h);
+  ctx.drawImage(im, sx, sy, sw, sh, 0, 0, w, h);
+  return { base64: c.toDataURL("image/jpeg", 0.8).split(",")[1], mime:"image/jpeg", genre:"photo" };
+}
+
+async function validerMasquage(){
+  const doc = decouperMasque(1600);
+  masqImg = null; masqFichier = null;
+  fermerSaisie();
+  await envoyerDocument(doc);
+}
+
+/* ---- PDF : pas de découpe possible sans bibliothèque externe, ---- */
+/* ---- que la politique de sécurité de la page interdit.        ---- */
+function avertirPdf(fichier){
+  saisieActive = "__pdfavert";
+  masqFichier = fichier;
+  $("#f-titre").textContent = "PDF : identité non masquable";
+  $("#f-champs").innerHTML =
+    '<div class="masq-avert">Un PDF ne peut pas être recadré ici. Il partira <b>entier</b>, '+
+    'en-tête d\'identité comprise.</div>'+
+    '<div class="masq-conseil">Pour l\'éviter : ouvrez le PDF dans l\'app Fichiers, touchez le '+
+    'stylo de <b>Annotation</b>, tracez un rectangle noir plein sur le nom, la date de naissance '+
+    'et l\'adresse, enregistrez, puis réimportez.<br><br>'+
+    'Plus rapide : faites une <b>capture d\'écran</b> de la page des résultats seule, et importez-la '+
+    'comme photo — vous pourrez alors masquer la zone ici.</div>';
+  $("#f-standard").style.display = "none";
+  $("#f-ok").textContent = "Envoyer le PDF entier";
+  $("#voile").classList.add("ouvert");
+}
+
+async function validerPdf(){
+  const f = masqFichier;
+  masqFichier = null;
+  fermerSaisie();
+  if(f.size > 5*1024*1024){
+    document.getElementById("etat-photo").innerHTML =
+      '<div class="recap-msg mal">Ce PDF fait '+(f.size/1048576).toFixed(1)+' Mo, c\'est trop lourd. '+
+      'Envoyez-le page par page, ou faites une capture d\'écran de la page des résultats.</div>';
+    return;
+  }
+  await envoyerDocument({ base64: await lireBase64(f), mime:"application/pdf", genre:"PDF" });
 }
 
 /* ============ navigation ============ */
