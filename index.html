@@ -340,11 +340,18 @@ select{appearance:none;-webkit-appearance:none;background-image:url("data:image/
 .masq-rap{flex:1;padding:11px;border-radius:999px;background:var(--creme);border:1px solid var(--bord);
   font-size:13.5px;font-weight:600}
 .masq-rap:active{transform:scale(.96)}
+
+.lien-retro{display:block;margin:4px auto 0;padding:10px 18px;border-radius:999px;background:transparent;
+  border:1px solid var(--bord);font-size:13.5px;font-weight:600;color:var(--vert);font-family:var(--sans)}
+.retro-suite{display:flex;align-items:center;gap:10px;margin-bottom:15px;font-size:13.5px;color:var(--vert);cursor:pointer}
+.retro-suite input{width:21px;height:21px;padding:0;flex:none;accent-color:var(--vert);margin:0}
+.retro-msg{display:none;background:var(--alerte-voile);border:1px solid rgba(176,58,48,.28);border-radius:var(--ri);
+  padding:12px 14px;font-size:13px;color:var(--alerte);line-height:1.55;margin-bottom:12px}
 .imprime-seul{display:none}
 
 @media print{
   body{background:#fff;padding:0;font-size:11pt}
-  .blob,nav.barre,.periodes,.chips,.btn,#etat-photo,.ruban,.disque-zone,.trio,.jauge,header.top .terme,.sync,.porte,.bandeau{display:none!important}
+  .blob,nav.barre,.periodes,.chips,.btn,.lien-retro,#etat-photo,.ruban,.disque-zone,.trio,.jauge,header.top .terme,.sync,.porte,.bandeau{display:none!important}
   .g-carte{border:1px solid #bbb;box-shadow:none;break-inside:avoid}
   .vue{display:none!important} #vue-rapport{display:block!important;animation:none}
   .alarme{background:#fff!important;border:1.5px solid #444!important;box-shadow:none;animation:none}
@@ -397,6 +404,7 @@ select{appearance:none;-webkit-appearance:none;background-image:url("data:image/
         <div id="disque-int"><div class="repos">Démarrer<br>la contraction</div></div>
       </button>
     </div>
+    <button class="lien-retro" id="btn-retro">+ Saisir une contraction passée</button>
     <div class="trio">
       <div class="stat"><div class="v" id="s-derniere">—</div><div class="l">Dernière</div></div>
       <div class="stat"><div class="v" id="s-interv">—</div><div class="l">Intervalle moy.</div></div>
@@ -497,7 +505,7 @@ select{appearance:none;-webkit-appearance:none;background-image:url("data:image/
     <h3 id="f-titre">Mesure</h3>
     <div id="f-champs"></div>
     <div id="f-standard">
-      <label class="champ"><span>Date et heure</span><input type="datetime-local" id="f-quand"></label>
+      <label class="champ"><span id="f-quand-lib">Date et heure</span><input type="datetime-local" id="f-quand"></label>
       <label class="champ"><span>Note</span><textarea id="f-note" placeholder="Contexte, ressenti, position…"></textarea></label>
     </div>
     <button class="btn fort" id="f-ok">Enregistrer</button>
@@ -1104,12 +1112,14 @@ function fermerSaisie(){
   $("#voile").classList.remove("ouvert");
   $("#f-standard").style.display = "";
   $("#f-ok").textContent = "Enregistrer";
+  $("#f-quand-lib").textContent = "Date et heure";
   saisieActive = null;
 }
 $("#f-annul").addEventListener("click", fermerSaisie);
 $("#voile").addEventListener("click", e=>{ if(e.target.id === "voile") fermerSaisie(); });
 
 $("#f-ok").addEventListener("click", ()=>{
+  if(saisieActive === "__contraction"){ enregistrerContractionPassee(); return; }
   if(saisieActive === "__masquage"){ validerMasquage(); return; }
   if(saisieActive === "__pdfavert"){ validerPdf(); return; }
   if(saisieActive === "__relecture"){ enregistrerRelecture(); return; }
@@ -2417,6 +2427,64 @@ async function validerPdf(){
   }
   await envoyerDocument({ base64: await lireBase64(f), mime:"application/pdf", genre:"PDF" });
 }
+
+
+/* =====================================================================
+   SAISIE D'UNE CONTRACTION PASSÉE
+   Même format et même chemin d'écriture que le chronomètre (marquer, save,
+   synchronisation). La note mentionne l'origine : une durée reconstituée
+   n'a pas la précision d'une durée chronométrée.
+   ===================================================================== */
+function ouvrirContractionPassee(pre){
+  saisieActive = "__contraction";
+  $("#f-titre").textContent = "Contraction passée";
+  $("#f-champs").innerHTML =
+    '<div class="duo">'+
+      '<label class="champ"><span>Durée — minutes</span>'+
+      '<input type="number" id="c-cmin" inputmode="numeric" min="0" max="20" placeholder="1" value="'+(pre ? pre.min : "")+'"></label>'+
+      '<label class="champ"><span>secondes</span>'+
+      '<input type="number" id="c-csec" inputmode="numeric" min="0" max="59" placeholder="10" value="'+(pre ? pre.sec : "")+'"></label>'+
+    '</div><div style="height:13px"></div>'+
+    '<label class="retro-suite"><input type="checkbox" id="c-cenchainer"'+(pre ? ' checked' : '')+'>'+
+      '<span>Enchaîner avec la suivante</span></label>'+
+    '<div class="retro-msg" id="c-cmsg"></div>';
+  $("#f-quand-lib").textContent = "Début de la contraction";
+  $("#f-quand").value = pourInput(pre ? pre.debut : new Date());
+  $("#f-note").value = "";
+  $("#f-standard").style.display = "";
+  $("#voile").classList.add("ouvert");
+}
+
+function enregistrerContractionPassee(){
+  const msg = $("#c-cmsg");
+  const erreur = t => { msg.textContent = t; msg.style.display = "block"; };
+  const q = $("#f-quand").value;
+  const debut = q ? new Date(q) : null;
+  const mn = Number($("#c-cmin").value || 0), sc = Number($("#c-csec").value || 0);
+  const sec = Math.round(mn*60 + sc);
+
+  if(!debut || isNaN(debut)) return erreur("Indiquez l'heure de début.");
+  if(!(sec >= 1)) return erreur("Indiquez une durée d'au moins une seconde.");
+  if(sec > 1200) return erreur("Plus de 20 minutes : vérifiez la durée, ce n'est probablement pas une contraction unique.");
+  if(debut.getTime() + sec*1000 > Date.now() + 60000) return erreur("Cette contraction se terminerait dans le futur.");
+
+  const doublon = vivantes().some(c => Math.abs(new Date(c.debut) - debut) < 30000);
+  if(doublon && msg.dataset.confirme !== q){
+    msg.dataset.confirme = q;
+    return erreur("Une contraction est déjà enregistrée à cette heure. Appuyez de nouveau sur Enregistrer pour l'ajouter quand même.");
+  }
+
+  const noteUser = $("#f-note").value.trim();
+  const c = { id:uid(), debut:debut.toISOString(), secondes:sec,
+              note: noteUser ? noteUser+" · saisie a posteriori" : "Saisie a posteriori",
+              supprime:false };
+  marquer(c);
+  S.contractions.push(c);
+  const enchainer = $("#c-cenchainer").checked;
+  save(); fermerSaisie(); toutPeindre(); planifier();
+  if(enchainer) ouvrirContractionPassee({ debut:new Date(debut.getTime() + sec*1000), min:mn, sec:sc });
+}
+$("#btn-retro").addEventListener("click", ()=>ouvrirContractionPassee(null));
 
 /* ============ navigation ============ */
 const ORDRE = ["maintenant","agenda","rapport","donnees"];
