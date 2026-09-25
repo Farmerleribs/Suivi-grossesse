@@ -401,6 +401,8 @@ select{appearance:none;-webkit-appearance:none;background-image:url("data:image/
 .repli>summary{list-style:none;cursor:pointer;display:flex;align-items:center;gap:9px;
   font-family:var(--serif);font-size:18px;color:var(--vert);font-weight:600;letter-spacing:-.01em}
 .repli>summary::-webkit-details-marker{display:none}
+.repli>summary .valeur{margin-left:auto;font-family:var(--sans);font-size:13px;font-weight:600;
+  color:var(--doux);padding:5px 12px;border-radius:999px;background:var(--creme);white-space:nowrap}
 .repli>summary::after{content:"";width:8px;height:8px;border-right:2px solid var(--doux);
   border-bottom:2px solid var(--doux);transform:rotate(45deg) translateY(-2px);transition:transform .2s var(--gliss)}
 .repli[open]>summary::after{transform:rotate(-135deg) translateY(-2px)}
@@ -413,8 +415,9 @@ select{appearance:none;-webkit-appearance:none;background-image:url("data:image/
   .alarme{background:#fff!important;border:1.5px solid #444!important;box-shadow:none;animation:none}
   .carte,.bloc{border:1px solid #bbb;box-shadow:none;break-inside:avoid}
   .defile{overflow:visible}
-  .gc-carte,#lg-graph-contr,.repli>summary::after{display:none!important}
-  .repli>summary{font-family:var(--serif);font-size:13pt;margin-bottom:6px}
+  /* a l'impression : ni trace defilant, ni bandeaux deroulants vides —
+     l'en-tete d'impression porte deja la periode et le tableau porte la donnee */
+  .gc-carte,#lg-graph-contr,.repli{display:none!important}
   .alerte{font-weight:700;text-decoration:underline}
 }
 @media (prefers-reduced-motion:reduce){*{animation-duration:.01ms!important;transition-duration:.01ms!important}}
@@ -492,7 +495,7 @@ select{appearance:none;-webkit-appearance:none;background-image:url("data:image/
     <div class="grille" id="cal-grille" style="margin-top:6px"></div>
     <h2 class="titre" id="jour-titre">Journée</h2>
     <div class="carte" id="jour-detail"></div>
-    <details class="repli">
+    <details class="repli" id="repli-legende">
       <summary><span>Légende</span></summary>
       <div class="chips" id="legende-couleurs" style="margin-top:12px"></div>
     </details>
@@ -501,9 +504,11 @@ select{appearance:none;-webkit-appearance:none;background-image:url("data:image/
   <section class="vue" id="vue-rapport">
     <h2 class="titre">Rapport médical</h2>
     <div class="imprime-seul" id="entete-impression"></div>
-    <div class="legende">Période</div>
-    <div class="periodes" id="periodes"></div>
-    <details class="repli">
+    <details class="repli" id="repli-periode">
+      <summary><span>Période</span><b class="valeur" id="periode-valeur"></b></summary>
+      <div class="periodes" id="periodes" style="margin-top:12px"></div>
+    </details>
+    <details class="repli" id="repli-categories">
       <summary><span>Catégories affichées</span></summary>
       <div class="chips" id="filtres" style="margin-top:12px"></div>
     </details>
@@ -1267,7 +1272,7 @@ document.addEventListener("click", ev=>{
   if(p){
     periode = +p.dataset.per;
     document.querySelectorAll("[data-per]").forEach(x=>x.classList.toggle("on", +x.dataset.per === periode));
-    peindreRapport(); peindreGraphiques(); return;
+    majPeriode(); peindreRapport(); peindreGraphiques(); return;
   }
   const f = ev.target.closest("[data-filtre]");
   if(f){
@@ -1276,6 +1281,11 @@ document.addEventListener("click", ev=>{
     majFiltres(); peindreRapport(); peindreGraphiques();
   }
 });
+function majPeriode(){
+  const el = document.getElementById("periode-valeur");
+  const p = PERIODES.find(x => x.v === periode);
+  if(el && p) el.textContent = p.l;
+}
 function majFiltres(){
   document.querySelectorAll("[data-filtre]").forEach(el=>{
     const on = actifs.has(el.dataset.filtre);
@@ -2746,27 +2756,9 @@ function allerVue(nom){
 document.querySelectorAll("nav.barre button").forEach(b=>
   b.addEventListener("click", ()=>allerVue(b.dataset.vue)));
 
-/* balayage horizontal entre les onglets */
-(function(){
-  const zone = document.querySelector(".wrap");
-  let x0 = 0, y0 = 0, vif = false;
-  zone.addEventListener("touchstart", e=>{
-    if($("#voile").classList.contains("ouvert")) { vif = false; return; }
-    if(e.target.closest(".defile")) { vif = false; return; }
-    x0 = e.touches[0].clientX; y0 = e.touches[0].clientY; vif = true;
-  }, {passive:true});
-  zone.addEventListener("touchmove", e=>{
-    if(!vif) return;
-    const dx = e.touches[0].clientX - x0;
-    if(Math.abs(e.touches[0].clientY - y0) > 42){ vif = false; return; }
-    if(Math.abs(dx) > 68){
-      const i = ORDRE.indexOf(vueActive) + (dx < 0 ? 1 : -1);
-      if(i >= 0 && i < ORDRE.length) allerVue(ORDRE[i]);
-      vif = false;
-    }
-  }, {passive:true});
-  zone.addEventListener("touchend", ()=>{ vif = false; }, {passive:true});
-})();
+/* Le balayage horizontal entre onglets a ete retire : il se declenchait
+   pendant le defilement des bandeaux et du trace des contractions. On change
+   d'onglet par la barre du bas. */
 
 /* panneau de saisie repoussable au doigt */
 (function(){
@@ -2813,6 +2805,7 @@ $("#fichier-photo").addEventListener("change", e=>{
 });
 if(S.encours) tic = setInterval(peindreChrono, 250);
 majFiltres();
+majPeriode();
 toutPeindre();
 porte(CONFIGURE && !SESSION);
 if(CONFIGURE && SESSION) synchroniser();
