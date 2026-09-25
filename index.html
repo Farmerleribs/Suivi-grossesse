@@ -125,6 +125,13 @@ h2.titre{font-family:var(--serif);font-size:25px;font-weight:600;margin:28px 0 1
 .jauge .l2{font-size:13px;color:var(--doux);margin-top:10px;line-height:1.6}
 
 .chips{display:flex;flex-wrap:wrap;gap:9px}
+/* Bandeau defilant : une seule ligne qui glisse horizontalement, avec un
+   calage doux sur chaque bouton et de quoi respirer aux deux bords. */
+.chips.bande{flex-wrap:nowrap;overflow-x:auto;scroll-snap-type:x proximity;
+  -webkit-overflow-scrolling:touch;scrollbar-width:none;
+  margin:0 -18px;padding:4px 18px 10px}
+.chips.bande::-webkit-scrollbar{display:none}
+.chips.bande .chip{flex:none;scroll-snap-align:start}
 .chip{background:var(--blanc);border:1px solid var(--bord-blanc);border-radius:999px;padding:12px 18px;
   font-size:14.5px;font-weight:500;box-shadow:var(--ombre);transition:transform .14s var(--gliss),opacity .2s}
 .chip:active{transform:scale(.94)}
@@ -271,6 +278,8 @@ select{appearance:none;-webkit-appearance:none;background-image:url("data:image/
   border:1px solid var(--lavande-pale);border-radius:var(--rc);padding:16px 18px;margin-top:16px;
   box-shadow:var(--ombre);transition:transform .14s var(--gliss);font-family:var(--sans)}
 .bandeau:active{transform:scale(.985)}
+/* [hidden] ne suffit pas : la regle .bandeau impose display:block */
+.bandeau[hidden]{display:none}
 .bandeau.manque{background:#FDF3E6;border-color:#F0D2A8}
 .b-haut{display:flex;align-items:flex-start;justify-content:space-between;gap:14px}
 .b-sa{font-family:var(--serif);font-size:32px;font-weight:600;line-height:1;letter-spacing:-.02em;color:var(--vert)}
@@ -349,6 +358,53 @@ select{appearance:none;-webkit-appearance:none;background-image:url("data:image/
   padding:12px 14px;font-size:13px;color:var(--alerte);line-height:1.55;margin-bottom:12px}
 .imprime-seul{display:none}
 
+/* ---- rythme des contractions : barres sur un axe de temps reel ---- */
+.gc-carte{background:var(--blanc);border:1px solid var(--bord-blanc);border-radius:var(--rc);
+  padding:18px 0 14px;box-shadow:var(--ombre);overflow:hidden}
+.gc-tete{padding:0 18px;font-size:12.5px;color:var(--doux);line-height:1.55;margin-bottom:14px}
+.gc-zoom{display:flex;gap:6px;padding:0 18px 16px}
+.gc-zoom button{flex:1;padding:10px 6px;border-radius:999px;border:1px solid var(--bord);
+  background:var(--creme);font-size:13px;font-weight:600;color:var(--vert);font-family:var(--sans)}
+.gc-zoom button.on{background:var(--vert);color:#fff;border-color:var(--vert);font-weight:700}
+.gc-zone{display:flex;padding-left:18px}
+.gc-y{width:50px;flex:none;position:relative;height:176px}
+.gc-y span{position:absolute;right:9px;font-size:11.5px;color:var(--doux);font-weight:600;transform:translateY(50%)}
+.gc-piste{flex:1;overflow-x:auto;-webkit-overflow-scrolling:touch;scrollbar-width:none;padding:0 24px 0 8px}
+.gc-piste::-webkit-scrollbar{display:none}
+.gc-dedans{position:relative;height:176px;cursor:pointer}
+.gc-grille{position:absolute;border-top:1px dashed var(--bord);left:0}
+.gc-sol{position:absolute;left:0;bottom:46px;border-top:1.5px solid var(--bord)}
+.gc-tick{position:absolute;bottom:46px;width:1px;background:var(--bord);height:6px}
+.gc-tick.mini{height:3px}
+.gc-h{position:absolute;bottom:22px;font-size:11.5px;color:var(--doux);font-weight:600;
+  transform:translateX(-50%);white-space:nowrap;font-variant-numeric:tabular-nums}
+.gc-jour{position:absolute;bottom:46px;top:22px;border-left:1px dotted var(--lavande-pale)}
+.gc-jlab{position:absolute;top:1px;font-size:11px;color:var(--lavande-fonce);font-weight:700;
+  white-space:nowrap;background:var(--blanc);padding:0 4px 0 3px}
+.gc-bar{position:absolute;bottom:46px;background:var(--lavande);border-radius:3px 3px 0 0;pointer-events:none}
+.gc-bar.longue{background:var(--lavande-fonce)}
+.gc-bar.sel{background:var(--vert);z-index:2}
+.gc-pointe{position:absolute;pointer-events:none;transform:translateX(-50%);z-index:2;width:0;height:0;
+  border-left:5px solid transparent;border-right:5px solid transparent;border-top:6px solid var(--vert)}
+.gc-detail{margin:14px 18px 0;background:var(--creme);border-radius:var(--ri);padding:13px 16px;
+  display:flex;align-items:baseline;gap:14px;flex-wrap:wrap}
+.gc-detail .q{font-family:var(--serif);font-size:16px;font-weight:600}
+.gc-detail .v{font-size:13.5px;color:var(--doux)}
+.gc-detail .v b{color:var(--vert);font-weight:700}
+.gc-leg{display:flex;gap:16px;padding:13px 18px 0;font-size:11.5px;color:var(--doux);flex-wrap:wrap}
+.gc-leg i{display:inline-block;width:11px;height:11px;border-radius:3px;margin-right:6px;vertical-align:-1px}
+.gc-rien{padding:2px 18px 4px;font-size:13.5px;color:var(--doux);line-height:1.6}
+.gc-fond{flex-basis:100%;font-size:12px;color:var(--doux);line-height:1.5}
+
+/* ---- bandeau deroulant (legende, categories) ---- */
+.repli{margin:28px 0 12px}
+.repli>summary{list-style:none;cursor:pointer;display:flex;align-items:center;gap:9px;
+  font-family:var(--serif);font-size:18px;color:var(--vert);font-weight:600;letter-spacing:-.01em}
+.repli>summary::-webkit-details-marker{display:none}
+.repli>summary::after{content:"";width:8px;height:8px;border-right:2px solid var(--doux);
+  border-bottom:2px solid var(--doux);transform:rotate(45deg) translateY(-2px);transition:transform .2s var(--gliss)}
+.repli[open]>summary::after{transform:rotate(-135deg) translateY(-2px)}
+
 @media print{
   body{background:#fff;padding:0;font-size:11pt}
   .blob,nav.barre,.periodes,.chips,.btn,.lien-retro,#etat-photo,.ruban,.disque-zone,.trio,.jauge,header.top .terme,.sync,.porte,.bandeau{display:none!important}
@@ -357,6 +413,8 @@ select{appearance:none;-webkit-appearance:none;background-image:url("data:image/
   .alarme{background:#fff!important;border:1.5px solid #444!important;box-shadow:none;animation:none}
   .carte,.bloc{border:1px solid #bbb;box-shadow:none;break-inside:avoid}
   .defile{overflow:visible}
+  .gc-carte,#lg-graph-contr,.repli>summary::after{display:none!important}
+  .repli>summary{font-family:var(--serif);font-size:13pt;margin-bottom:6px}
   .alerte{font-weight:700;text-decoration:underline}
 }
 @media (prefers-reduced-motion:reduce){*{animation-duration:.01ms!important;transition-duration:.01ms!important}}
@@ -382,7 +440,7 @@ select{appearance:none;-webkit-appearance:none;background-image:url("data:image/
 </div>
 
 <div class="wrap">
-  <button class="bandeau" id="bandeau"></button>
+  <button class="bandeau" id="bandeau" hidden></button>
   <header class="top">
     <div>
       <div class="marque">suivi<em>.</em></div>
@@ -410,12 +468,8 @@ select{appearance:none;-webkit-appearance:none;background-image:url("data:image/
       <div class="stat"><div class="v" id="s-interv">—</div><div class="l">Intervalle moy.</div></div>
       <div class="stat"><div class="v" id="s-heure">—</div><div class="l">Sur 1 h</div></div>
     </div>
-    <div class="jauge" id="jauge511">
-      <div class="l1"><div class="nom">Repère 5-1-1</div><div class="etat" id="e511">—</div></div>
-      <div class="l2">Contractions d'au moins 1 minute, toutes les 5 minutes ou moins, depuis 1 heure. Ce repère varie selon les équipes — demandez à votre sage-femme quel seuil elle retient pour vous.</div>
-    </div>
     <div class="legende">Ajouter une mesure</div>
-    <div class="chips" id="chips"></div>
+    <div class="chips bande" id="chips"></div>
     <button class="btn photo" id="btn-photo">
       <svg viewBox="0 0 24 24" aria-hidden="true"><rect x="3" y="6" width="18" height="14" rx="4"/><circle cx="12" cy="13" r="3.6"/><path d="M9 6l1.3-2h3.4L15 6"/></svg>
       Importer une prise de sang — PDF ou photo</button>
@@ -438,8 +492,10 @@ select{appearance:none;-webkit-appearance:none;background-image:url("data:image/
     <div class="grille" id="cal-grille" style="margin-top:6px"></div>
     <h2 class="titre" id="jour-titre">Journée</h2>
     <div class="carte" id="jour-detail"></div>
-    <div class="legende">Légende</div>
-    <div class="chips" id="legende-couleurs"></div>
+    <details class="repli">
+      <summary><span>Légende</span></summary>
+      <div class="chips" id="legende-couleurs" style="margin-top:12px"></div>
+    </details>
   </section>
 
   <section class="vue" id="vue-rapport">
@@ -447,10 +503,14 @@ select{appearance:none;-webkit-appearance:none;background-image:url("data:image/
     <div class="imprime-seul" id="entete-impression"></div>
     <div class="legende">Période</div>
     <div class="periodes" id="periodes"></div>
-    <div class="legende">Catégories affichées</div>
-    <div class="chips" id="filtres"></div>
+    <details class="repli">
+      <summary><span>Catégories affichées</span></summary>
+      <div class="chips" id="filtres" style="margin-top:12px"></div>
+    </details>
     <div class="legende">Synthèse</div>
     <div class="synth" id="synthese"></div>
+    <div class="legende" id="lg-graph-contr">Rythme des contractions</div>
+    <div class="gc-carte" id="graph-contr"></div>
     <div class="legende">Tous les événements</div>
     <div class="defile"><table class="tableau" id="tab-evts"></table></div>
     <div class="legende">Courbes d'évolution</div>
@@ -464,7 +524,6 @@ select{appearance:none;-webkit-appearance:none;background-image:url("data:image/
       </div>
       <button class="btn fort" id="btn-synth">Générer le récapitulatif</button>
       <button class="btn" id="btn-ia">Analyse par IA</button>
-      <button class="btn" id="btn-copier">Copier le relevé pour Claude</button>
       <div id="recap"></div>
     </div>
 
@@ -473,7 +532,7 @@ select{appearance:none;-webkit-appearance:none;background-image:url("data:image/
   </section>
 
   <section class="vue" id="vue-donnees">
-    <h2 class="titre">Données</h2>
+    <h2 class="titre">Profil</h2>
     <div class="carte">
       <label class="champ"><span>Date du terme prévu</span><input type="date" id="in-terme"></label>
       <label class="champ" style="margin-bottom:0"><span>Prénom (en-tête du rapport)</span>
@@ -518,7 +577,7 @@ select{appearance:none;-webkit-appearance:none;background-image:url("data:image/
     <button data-vue="maintenant" class="on"><svg viewBox="0 0 24 24"><circle cx="12" cy="13.5" r="7.5"/><path d="M12 10v3.5l2.5 2M9.5 2.5h5"/></svg>Maintenant</button>
     <button data-vue="agenda"><svg viewBox="0 0 24 24"><rect x="3" y="5" width="18" height="16" rx="4.5"/><path d="M3 10h18M8 3v4M16 3v4"/></svg>Agenda</button>
     <button data-vue="rapport"><svg viewBox="0 0 24 24"><rect x="5" y="3" width="14" height="18" rx="3.5"/><path d="M9 8.5h6M9 12.5h6M9 16.5h3"/></svg>Rapport</button>
-    <button data-vue="donnees"><svg viewBox="0 0 24 24"><ellipse cx="12" cy="6" rx="8" ry="3"/><path d="M4 6v12c0 1.7 3.6 3 8 3s8-1.3 8-3V6M4 12c0 1.7 3.6 3 8 3s8-1.3 8-3"/></svg>Données</button>
+    <button data-vue="donnees"><svg viewBox="0 0 24 24"><ellipse cx="12" cy="6" rx="8" ry="3"/><path d="M4 6v12c0 1.7 3.6 3 8 3s8-1.3 8-3V6M4 12c0 1.7 3.6 3 8 3s8-1.3 8-3"/></svg>Profil</button>
   </div>
 </nav>
 
@@ -892,14 +951,6 @@ function peindreStats(){
   const h1 = cs.filter(c=>new Date(c.debut) >= lim);
   $("#s-heure").textContent = h1.length ? h1.length+" contr." : "0";
 
-  const j = $("#jauge511"), e = $("#e511");
-  if(h1.length < 3){ j.classList.remove("atteint"); e.textContent = "Pas encore assez de données"; return; }
-  const longues = h1.every(c=>c.secondes >= 55);
-  let serre = true;
-  for(let i=1;i<h1.length;i++) if((new Date(h1[i].debut)-new Date(h1[i-1].debut)) > 5.5*60000) serre = false;
-  const couvre = (new Date(h1[h1.length-1].debut) - new Date(h1[0].debut)) >= 50*60000;
-  if(longues && serre && couvre){ j.classList.add("atteint"); e.textContent = "Repère atteint — appelle"; }
-  else{ j.classList.remove("atteint"); e.textContent = h1.length+" contr. sur 1 h"; }
 }
 
 /* En France le terme est fixe a 41 SA, soit 287 jours d'amenorrhee, et non 40.
@@ -1301,6 +1352,8 @@ function peindreRapport(){
   $("#synthese").innerHTML = blocs.length ? blocs.join("")
     : '<div class="rien" style="grid-column:1/-1">Aucune mesure sur cette période avec ces filtres.</div>';
 
+  peindreGraphContr();
+
   const t = $("#tab-evts");
   if(!evts.length){ t.innerHTML = ""; return; }
   t.innerHTML = '<thead><tr><th>Date</th><th>Heure</th><th>Catégorie</th><th>Valeur</th><th>Durée</th><th>Intervalle</th><th>Note</th></tr></thead><tbody>'+
@@ -1309,6 +1362,217 @@ function peindreRapport(){
       '<td class="num">'+(e.duree!=null?dureeCourte(e.duree):"—")+'</td>'+
       '<td class="num">'+(e.interv!=null?ecart(e.interv):"—")+'</td><td>'+ech(e.note||"—")+'</td></tr>').join("")+'</tbody>';
 }
+
+/* =====================================================================
+   RYTHME DES CONTRACTIONS — une barre par contraction, posee a son heure
+   reelle. La hauteur est la duree, l'ecart horizontal est l'intervalle :
+   rien n'est ecrit sur le trace, tout se voit. Lecture seule : ces
+   fonctions ne touchent ni a S, ni au stockage, ni a la base.
+   ===================================================================== */
+const GC_LARG = {5:8, 24:5, 48:3.5};   /* largeur de barre en px, par fenetre */
+const GC_ECRANS = 30;                  /* profondeur de defilement, en ecrans */
+let gcFenetre = 5, gcSel = -1, gcRecaler = true, gcCles = "";
+let gcAFaire = false;   /* un trace a ete demande pendant que la vue etait masquee */
+
+/* les contractions de la periode choisie dans le rapport */
+function gcDonnees(){
+  const lim = periode ? Date.now() - periode*86400000 : 0;
+  return vivantes()
+    .filter(c => new Date(c.debut).getTime() >= lim)
+    .map(c => ({ t:new Date(c.debut), s:c.secondes }));
+}
+
+function gcNomJour(d){
+  const k = jourCle(d);
+  if(k === jourCle(new Date())) return "aujourd'hui";
+  if(k === jourCle(new Date(Date.now() - 86400000))) return "hier";
+  return p2(d.getDate())+"/"+p2(d.getMonth()+1);
+}
+function gcQuand(t){
+  const k = jourCle(t);
+  if(k === jourCle(new Date())) return heure(t);
+  if(k === jourCle(new Date(Date.now() - 86400000))) return "hier "+heure(t);
+  return dateCourte(t)+" "+heure(t);
+}
+
+function gcTracer(){
+  const piste = document.getElementById("gc-piste");
+  const dd = document.getElementById("gc-dedans");
+  if(!piste || !dd) return;
+  /* L'onglet Rapport est peint avant d'etre affiche : la piste mesure alors
+     zero et l'echelle serait fausse. On note le trace a refaire, il est
+     relance quand la vue devient visible. */
+  if(!piste.clientWidth){ gcAFaire = true; return; }
+  gcAFaire = false;
+  const D = gcDonnees();
+  if(D.length < 2) return;
+
+  const garde = piste.scrollLeft;
+  const vis = Math.max(180, piste.clientWidth - 32);
+  const px = vis / (gcFenetre*60);
+
+  /* origine : minuit du jour de la premiere contraction affichee */
+  const orig = new Date(D[0].t.getTime()); orig.setHours(0,0,0,0);
+  const M = t => (t.getTime() - orig.getTime())/60000;
+
+  const marge = gcFenetre*60*0.04;
+  const t1 = M(D[D.length-1].t) + D[D.length-1].s/60 + marge;
+  let t0 = M(D[0].t) - marge;
+  /* si tout tient dans la fenetre, la fenetre se cale sur la fin :
+     « 2 jours » montre alors vraiment les deux derniers jours */
+  if(t1 - t0 < gcFenetre*60) t0 = t1 - gcFenetre*60;
+  /* profondeur bornee : sans cela, « tout » a l'echelle 5 h produirait
+     des dizaines de milliers de pixels et autant d'elements */
+  const plafond = GC_ECRANS*gcFenetre*60;
+  const coupe = (t1 - t0) > plafond;
+  if(coupe) t0 = t1 - plafond;
+
+  const V = D.filter(c => M(c.t) >= t0);
+  if(V.length < 2) return;
+  if(gcSel < 0 || gcSel >= V.length) gcSel = V.length - 1;
+
+  const X = m => (m - t0)*px;
+  const L = Math.max(vis, (t1 - t0)*px);
+  const maxd = Math.max(90, ...V.map(c => c.s));
+  const HB = 118, SOL = 46;
+  const yMin = SOL + 60/maxd*HB;
+
+  document.getElementById("gc-y").innerHTML =
+    '<span style="bottom:'+yMin.toFixed(0)+'px">1 min</span>'+
+    '<span style="bottom:'+(SOL + HB + 12)+'px;font-weight:700;color:var(--vert)">durée</span>';
+
+  let h = '<div class="gc-grille" style="bottom:'+yMin.toFixed(0)+'px;width:'+L.toFixed(0)+'px"></div>'+
+          '<div class="gc-sol" style="width:'+L.toFixed(0)+'px"></div>';
+
+  /* Graduations. Le pas laisse au moins 70 px entre deux heures ecrites.
+     Elles sont avancees sur une vraie date, pas par multiples de 1440 :
+     un jour de changement d'heure ne dure pas 24 h. */
+  const pas  = gcFenetre <= 5 ? 60  : (gcFenetre <= 24 ? 360 : 480);
+  const mini = gcFenetre <= 5 ? 30  : (gcFenetre <= 24 ? 120 : 240);
+  const cur = new Date(orig.getTime());
+  cur.setMinutes(0, 0, 0);
+  while(M(cur) < t0) cur.setMinutes(cur.getMinutes() + mini);
+  for(let k = 0; k < 4000 && M(cur) <= t1; k++){
+    const m = M(cur), hh = cur.getHours(), mn = cur.getMinutes();
+    if((hh*60 + mn) % pas === 0){
+      if(hh || mn){                                   /* minuit porte son propre repere */
+        h += '<div class="gc-tick" style="left:'+X(m).toFixed(1)+'px"></div>'+
+             '<div class="gc-h" style="left:'+X(m).toFixed(1)+'px">'+p2(hh)+':'+p2(mn)+'</div>';
+      }
+    } else {
+      h += '<div class="gc-tick mini" style="left:'+X(m).toFixed(1)+'px"></div>';
+    }
+    cur.setMinutes(cur.getMinutes() + mini);
+  }
+
+  /* changements de jour, sur des dates reelles egalement */
+  const jr = new Date(orig.getTime());
+  for(let k = 0; k < 70 && M(jr) <= t1; k++){
+    const m = M(jr);
+    if(m >= t0){
+      h += '<div class="gc-jour" style="left:'+X(m).toFixed(1)+'px"></div>'+
+           '<div class="gc-jlab" style="left:'+X(m).toFixed(1)+'px'+
+           /* pres de la fin du trace, le nom du jour bascule a gauche du trait
+              pour ne pas etre coupe par le bord de la carte */
+           (X(m) > L - 86 ? ';transform:translateX(-100%);padding:0 3px 0 4px' : '')+'">'+
+           gcNomJour(jr)+'</div>';
+    }
+    jr.setDate(jr.getDate() + 1);
+  }
+
+  /* les barres : largeur fixe par fenetre, car a l'echelle du jour une
+     contraction d'une minute mesurerait moins d'un pixel de large */
+  const w = GC_LARG[gcFenetre];
+  V.forEach((c,i)=>{
+    const ht = c.s/maxd*HB, x = X(M(c.t));
+    h += '<div class="gc-bar'+(c.s>=60?" longue":"")+(i===gcSel?" sel":"")+
+         '" style="left:'+(x - w/2).toFixed(1)+'px;width:'+w+'px;height:'+ht.toFixed(0)+'px"></div>';
+    if(i === gcSel)
+      h += '<div class="gc-pointe" style="left:'+x.toFixed(1)+'px;bottom:'+(SOL+ht+4).toFixed(0)+'px"></div>';
+  });
+
+  dd.style.width = L.toFixed(0)+"px";
+  dd.innerHTML = h;
+  dd.onclick = ev => {
+    const x = ev.clientX - dd.getBoundingClientRect().left;
+    let dmin = Infinity;
+    V.forEach(c => { const e = Math.abs(X(M(c.t)) - x); if(e < dmin) dmin = e; });
+    /* toutes les contractions que le doigt recouvre vraiment : un nouvel
+       appui au meme endroit passe a la suivante, donc aucune barre d'un
+       paquet serre n'est inaccessible en vue large */
+    const tol = Math.max(dmin, w/2), proches = [];
+    V.forEach((c,i)=>{ if(Math.abs(X(M(c.t)) - x) <= tol + 0.05) proches.push(i); });
+    gcSel = proches[(proches.indexOf(gcSel) + 1) % proches.length];
+    gcRecaler = false; gcTracer();
+  };
+  piste.scrollLeft = gcRecaler ? piste.scrollWidth : garde;
+  gcRecaler = false;
+
+  const c = V[gcSel];
+  document.getElementById("gc-detail").innerHTML =
+    '<span class="q">'+gcQuand(c.t)+'</span>'+
+    '<span class="v">durée <b>'+dureeCourte(c.s)+'</b></span>'+
+    (gcSel > 0 ? '<span class="v">écart <b>'+ecart(c.t - V[gcSel-1].t)+'</b></span>' : '')+
+    '<span class="v">'+(gcSel+1)+'<sup>'+(gcSel===0?"re":"e")+'</sup> sur '+V.length+'</span>'+
+    (coupe ? '<span class="gc-fond">Le tracé remonte jusqu\'au '+
+             dateCourte(new Date(orig.getTime() + t0*60000))+
+             '. Les contractions antérieures de la période restent dans le tableau.</span>' : '');
+}
+
+function peindreGraphContr(){
+  const hote = document.getElementById("graph-contr");
+  const titre = document.getElementById("lg-graph-contr");
+  if(!hote || !titre) return;
+
+  /* le trace ne s'affiche que si la categorie Contraction est retenue */
+  const montrer = actifs.has("contraction");
+  hote.style.display = montrer ? "" : "none";
+  titre.style.display = montrer ? "" : "none";
+  if(!montrer) return;
+
+  const D = gcDonnees();
+  const cles = D.map(c => c.t.getTime()+":"+c.s).join(",");
+  if(cles !== gcCles){ gcCles = cles; gcSel = -1; }
+
+  if(D.length < 2){
+    hote.innerHTML = '<div class="gc-rien">'+(D.length
+      ? 'Une seule contraction sur cette période : il en faut au moins deux pour qu\'un rythme apparaisse.'
+      : 'Aucune contraction sur cette période.')+'</div>';
+    return;
+  }
+
+  hote.innerHTML =
+    '<div class="gc-tete">Une barre par contraction, posée à son heure réelle. Sa hauteur est sa durée ; '+
+      'l\'écart entre deux barres est l\'intervalle, il se voit sans être écrit.</div>'+
+    '<div class="gc-zoom">'+
+      [[5,"5 h"],[24,"1 jour"],[48,"2 jours"]].map(f =>
+        '<button type="button" class="'+(f[0]===gcFenetre?"on":"")+'" data-gcf="'+f[0]+'">'+f[1]+'</button>'
+      ).join("")+
+    '</div>'+
+    '<div class="gc-zone"><div class="gc-y" id="gc-y"></div>'+
+      '<div class="gc-piste" id="gc-piste"><div class="gc-dedans" id="gc-dedans"></div></div></div>'+
+    '<div class="gc-detail" id="gc-detail"></div>'+
+    '<div class="gc-leg">'+
+      '<span><i style="background:var(--lavande)"></i>moins d\'une minute</span>'+
+      '<span><i style="background:var(--lavande-fonce)"></i>une minute ou plus</span>'+
+    '</div>';
+
+  gcRecaler = true;
+  gcTracer();
+}
+
+document.addEventListener("click", ev => {
+  const b = ev.target.closest("[data-gcf]");
+  if(!b) return;
+  gcFenetre = +b.dataset.gcf;
+  document.querySelectorAll("[data-gcf]").forEach(x =>
+    x.classList.toggle("on", +x.dataset.gcf === gcFenetre));
+  gcSel = -1;            /* la vue s'ouvre sur les plus recentes */
+  gcRecaler = true;
+  gcTracer();
+});
+window.addEventListener("resize", () => { if(document.getElementById("gc-piste")) gcTracer(); });
+
 $("#btn-imprimer").addEventListener("click", ()=>window.print());
 
 /* ============ données ============ */
@@ -1843,46 +2107,6 @@ async function analyseIA(){
   }
 }
 
-/* ===== Copier le relevé pour le coller dans l'app Claude ===== */
-function texteAColler(){
-  const s = synthese();
-  const releve = releveTexte();
-  if(!releve) return "";
-  return [
-    "Voici le journal de suivi de ma grossesse. Aide-moi à préparer ma consultation avec la sage-femme.",
-    "",
-    "Décris et organise ces mesures : ce qui a changé, ce qu'il faut signaler, et des questions à poser.",
-    "Ne pose pas de diagnostic, ne me dis pas si c'est normal ou rassurant, et ne me conseille pas d'attendre.",
-    "",
-    "---",
-    releve
-  ].join("\n");
-}
-
-async function copierPourClaude(){
-  const b = document.getElementById("btn-copier");
-  const t = texteAColler();
-  if(!t){ document.getElementById("recap").innerHTML = '<div class="recap-msg">Aucune mesure sur cette période.</div>'; return; }
-  let bon = false;
-  try{
-    await navigator.clipboard.writeText(t);
-    bon = true;
-  }catch(e){
-    const z = document.createElement("textarea");
-    z.value = t;
-    z.style.cssText = "position:fixed;top:0;left:0;opacity:0";
-    document.body.appendChild(z); z.focus(); z.select();
-    try{ bon = document.execCommand("copy"); }catch(x){ bon = false; }
-    document.body.removeChild(z);
-  }
-  b.textContent = bon ? "Relevé copié ✓" : "Copie impossible";
-  document.getElementById("recap").innerHTML = bon
-    ? '<div class="recap-msg">Le relevé est dans le presse-papier. Ouvrez l\'app Claude, collez, envoyez. '+
-      '<a href="https://claude.ai/new" target="_blank" rel="noopener" style="color:var(--lavande-fonce);font-weight:700">Ouvrir Claude</a></div>'
-    : '<div class="recap-msg mal">Le navigateur a refusé la copie. Utilisez l\'export CSV dans l\'onglet Données.</div>';
-  setTimeout(()=>{ b.textContent = "Copier le relevé pour Claude"; }, 4000);
-}
-
 /* =====================================================================
    BANDEAU D'AVANCEMENT — semaines d'aménorrhée, recalculées à chaque rendu
    ===================================================================== */
@@ -1892,6 +2116,7 @@ function peindreBandeau(){
   const g = grossesse();
 
   if(!g || !g.valide){
+    el.hidden = false;
     el.className = "bandeau manque";
     el.innerHTML =
       '<div class="b-titre">Terme non renseigné</div>'+
@@ -1902,19 +2127,12 @@ function peindreBandeau(){
     return;
   }
 
-  const pct = Math.max(0, Math.min(100, (g.jours/280)*100));
-  el.className = "bandeau";
-  el.onclick = ouvrirTerme;
-  el.innerHTML =
-    '<div class="b-haut">'+
-      '<div><div class="b-sa">'+g.sa+' <span>SA</span>'+(g.rj?' + '+g.rj+' <span>j</span>':'')+'</div>'+
-      '<div class="b-sous">'+(g.cale?'':'')+["","1er","2e","3e"][g.trimestre]+' trimestre · '+
-        (g.reste>=0 ? g.reste+' jours avant le terme' : 'terme dépassé de '+(-g.reste)+' jours')+'</div></div>'+
-      '<div class="b-terme">terme<br><b>'+dateCourte(g.terme)+'</b></div>'+
-    '</div>'+
-    '<div class="b-piste"><div class="b-jauge" style="width:'+pct.toFixed(1)+'%"></div>'+
-      ['','',''].map((_,i)=>'<i style="left:'+[(14/40*100),(28/40*100),(37/40*100)][i]+'%"></i>').join("")+
-    '</div>';
+  /* Le bandeau d'avancement a ete retire de la page : les semaines
+     d'amenorrhee figurent dans l'en-tete. Seul l'avertissement ci-dessus
+     subsiste, parce qu'il signale que les alertes cliniques sont inactives. */
+  el.hidden = true;
+  el.innerHTML = "";
+  el.onclick = null;
 }
 
 /* =====================================================================
@@ -2521,6 +2739,8 @@ function allerVue(nom){
     entrant.className = "vue actif";
     enTransition = false;
     echelonner(entrant);
+    /* la piste du graphique n'est mesurable qu'une fois la vue affichee */
+    if(nom === "rapport") gcTracer();
   }, 330);
 }
 document.querySelectorAll("nav.barre button").forEach(b=>
@@ -2584,7 +2804,6 @@ function toutPeindre(){
   peindreBandeau(); peindreGraphiques();
 }
 document.getElementById("btn-synth").addEventListener("click", peindreSynthese);
-document.getElementById("btn-copier").addEventListener("click", copierPourClaude);
 document.getElementById("btn-ia").addEventListener("click", analyseIA);
 document.getElementById("btn-photo").addEventListener("click", ()=>$("#fichier-photo").click());
 $("#fichier-photo").addEventListener("change", e=>{
