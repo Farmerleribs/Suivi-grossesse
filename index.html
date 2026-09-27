@@ -385,9 +385,15 @@ select{appearance:none;-webkit-appearance:none;background-image:url("data:image/
 .d-non .ic{background:rgba(110,69,192,.13)} .d-non .ic svg{stroke:var(--lavande-fonce)}
 .d-oui{background:var(--rouille);color:#fff}
 .d-oui .ic{background:rgba(255,255,255,.17)} .d-oui .ic svg{stroke:#fff}
-.d-bas{flex:none;padding:12px 16px calc(18px + env(safe-area-inset-bottom,0px));text-align:center}
-.d-passer{background:none;border:none;font-family:var(--sans);font-size:14px;font-weight:600;
-  color:var(--doux);padding:12px 22px;text-decoration:underline;text-underline-offset:4px}
+.d-moities{padding-bottom:calc(16px + env(safe-area-inset-bottom,0px))}
+
+/* ---- message de confirmation ---- */
+.info{position:fixed;left:50%;bottom:calc(86px + env(safe-area-inset-bottom,0px));z-index:130;
+  transform:translate(-50%,14px);background:var(--vert);color:#fff;border-radius:22px;
+  padding:13px 22px;font-size:14.5px;font-weight:600;line-height:1.4;text-align:center;
+  width:max-content;max-width:calc(100vw - 32px);text-wrap:balance;opacity:0;pointer-events:none;
+  transition:opacity .2s,transform .22s var(--gliss);box-shadow:0 10px 30px rgba(16,58,47,.3)}
+.info.la{opacity:1;transform:translate(-50%,0)}
 
 /* ---- marque « douloureuse » dans les releves ---- */
 .mal{font-size:11px;font-weight:700;padding:2px 9px;border-radius:999px;margin-left:8px;
@@ -598,6 +604,8 @@ select{appearance:none;-webkit-appearance:none;background-image:url("data:image/
   </section>
 </div>
 
+<div class="info" id="info" role="status" aria-live="polite"></div>
+
 <div class="douleur" id="douleur" role="dialog" aria-modal="true" aria-labelledby="d-texte">
   <div class="d-haut">
     <div class="d-texte" id="d-texte">Est-ce que la contraction était douloureuse&nbsp;?</div>
@@ -612,9 +620,6 @@ select{appearance:none;-webkit-appearance:none;background-image:url("data:image/
       <span class="ic" aria-hidden="true"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="M8.2 15.8c1-.9 2.3-1.4 3.8-1.4s2.8.5 3.8 1.4"/><path d="M9 9.6h.01M15 9.6h.01"/></svg></span>
       <span class="mot">Oui</span><span class="aide">il a fallu souffler</span>
     </button>
-  </div>
-  <div class="d-bas">
-    <button type="button" class="d-passer" data-douleur="passer">Je ne sais pas — passer</button>
   </div>
 </div>
 
@@ -1037,37 +1042,58 @@ function peindreTerme(){
    La contraction est deja enregistree quand l'ecran s'ouvre : repondre ne
    fait qu'ajouter une information, et ne pas repondre n'en retire aucune.
    ===================================================================== */
-const DELAI_DOULEUR = 20000;      /* fermeture automatique, sans reponse */
-let douleurPour = null, douleurMinuteur = null;
+/* L'ecran ne porte que deux choix. Ne pas repondre reste possible : il se
+   ferme seul au bout de ce delai, et la contraction garde une intensite non
+   renseignee. C'est ce qui garantit que l'application ne bloque jamais. */
+const DELAI_DOULEUR = 20000;
+let douleurPour = null, douleurMinuteur = null, douleurSuite = null;
 
-function ouvrirDouleur(c){
+function ouvrirDouleur(c, suite){
   const el = $("#douleur");
-  if(!el || !c) return;
+  if(!el || !c){ if(suite) suite(null); return; }
   douleurPour = c.id;
+  douleurSuite = suite || null;
   $("#d-dur").textContent = dureeCourte(c.secondes);
   el.classList.add("la");
   clearTimeout(douleurMinuteur);
-  douleurMinuteur = setTimeout(fermerDouleur, DELAI_DOULEUR);
+  douleurMinuteur = setTimeout(()=>fermerDouleur(null), DELAI_DOULEUR);
 }
 
-function fermerDouleur(){
+/* rep vaut true, false, ou null quand l'ecran se ferme sans reponse */
+function fermerDouleur(rep){
   const el = $("#douleur");
   if(el) el.classList.remove("la");
   clearTimeout(douleurMinuteur);
   douleurMinuteur = null;
   douleurPour = null;
+  const suite = douleurSuite;
+  douleurSuite = null;
+  if(suite) suite(rep);
 }
 
 function repondreDouleur(rep){
   const id = douleurPour;
-  fermerDouleur();
-  if(!id || rep === "passer") return;          /* sans reponse : reste non renseignee */
+  if(!id){ fermerDouleur(null); return; }
   const c = S.contractions.find(x=>x.id === id);
-  if(!c) return;
-  c.douleur = (rep === "oui");
-  marquer(c);
-  if(navigator.vibrate) navigator.vibrate(18);
-  save(); toutPeindre(); planifier();
+  const val = (rep === "oui");
+  if(c){
+    c.douleur = val;
+    marquer(c);
+    if(navigator.vibrate) navigator.vibrate(18);
+  }
+  fermerDouleur(c ? val : null);
+  if(c){ save(); toutPeindre(); planifier(); }
+}
+
+/* message de confirmation, efface seul */
+let infoMinuteur = null;
+function info(texte){
+  const el = $("#info");
+  if(!el) return;
+  el.textContent = texte;
+  el.classList.add("la");
+  clearTimeout(infoMinuteur);
+  infoMinuteur = setTimeout(()=>el.classList.remove("la"), 2800);
 }
 
 document.addEventListener("click", ev=>{
@@ -2864,7 +2890,16 @@ function enregistrerContractionPassee(){
   S.contractions.push(c);
   const enchainer = $("#c-cenchainer").checked;
   save(); fermerSaisie(); toutPeindre(); planifier();
-  if(enchainer) ouvrirContractionPassee({ debut:new Date(debut.getTime() + sec*1000), min:mn, sec:sc });
+
+  /* Meme question que pour le chronometre. La confirmation n'arrive qu'a la
+     fermeture de cet ecran, pour que le dernier mot soit « enregistree ». */
+  ouvrirDouleur(c, rep => {
+    info(rep === true ? "Contraction enregistrée — douloureuse"
+       : rep === false ? "Contraction enregistrée"
+       : "Contraction enregistrée — intensité non renseignée");
+    if(enchainer) setTimeout(()=>ouvrirContractionPassee({
+      debut:new Date(debut.getTime() + sec*1000), min:mn, sec:sc }), 260);
+  });
 }
 $("#btn-retro").addEventListener("click", ()=>ouvrirContractionPassee(null));
 
