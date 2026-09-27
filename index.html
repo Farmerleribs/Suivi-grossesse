@@ -20,6 +20,10 @@
   --lavande:#A98BE6; --lavande-pale:#E7DDF8; --lavande-voile:#F1EBFB; --lavande-fonce:#6E45C0;
   --abricot:#F0A05A; --abricot-pale:#FBE4CE;
   --alerte:#B03A30; --alerte-voile:#FBEAE7;
+  /* Contraction douloureuse. Volontairement a distance du rouge d'alerte :
+     « douloureuse » ne doit pas se lire comme « alerte ». Contraste verifie :
+     5,12:1 sur creme, 5,67:1 sur blanc. */
+  --rouille:#9E5230; --rouille-voile:rgba(158,82,48,.12);
   --bord:#EDE3D8; --bord-blanc:#F0EAE3;
   --ombre:0 1px 2px rgba(16,58,47,.03), 0 10px 26px rgba(16,58,47,.055);
   --ombre-h:0 3px 8px rgba(16,58,47,.05), 0 18px 40px rgba(16,58,47,.09);
@@ -358,6 +362,38 @@ select{appearance:none;-webkit-appearance:none;background-image:url("data:image/
   padding:12px 14px;font-size:13px;color:var(--alerte);line-height:1.55;margin-bottom:12px}
 .imprime-seul{display:none}
 
+/* ---- question de douleur, plein ecran ---- */
+.douleur{position:fixed;inset:0;z-index:120;display:flex;flex-direction:column;background:var(--creme);
+  opacity:0;pointer-events:none;transition:opacity .22s var(--gliss);
+  padding-top:env(safe-area-inset-top,0px)}
+.douleur.la{opacity:1;pointer-events:auto}
+.d-haut{padding:42px 26px 18px;text-align:center;flex:none}
+.d-texte{font-family:var(--serif);font-size:26px;font-weight:600;line-height:1.25;
+  letter-spacing:-.018em;color:var(--vert);text-wrap:balance}
+.d-dur{margin-top:11px;font-size:14px;color:var(--doux);font-variant-numeric:tabular-nums}
+.d-dur b{color:var(--vert);font-weight:700}
+.d-moities{flex:1;display:flex;flex-direction:column;gap:12px;padding:6px 16px 0;min-height:0}
+.d-moitie{flex:1;border:none;border-radius:28px;cursor:pointer;display:flex;flex-direction:column;
+  align-items:center;justify-content:center;gap:15px;font-family:var(--sans);padding:18px;
+  transition:transform .16s var(--gliss),filter .16s}
+.d-moitie:active{transform:scale(.975);filter:brightness(.95)}
+.d-moitie .ic{width:72px;height:72px;border-radius:50%;display:grid;place-items:center;flex:none}
+.d-moitie .ic svg{width:38px;height:38px;fill:none;stroke-width:2.4;stroke-linecap:round;stroke-linejoin:round}
+.d-moitie .mot{font-family:var(--serif);font-size:29px;font-weight:600;letter-spacing:-.01em}
+.d-moitie .aide{font-size:13px;opacity:.82;margin-top:-7px}
+.d-non{background:var(--lavande-voile);color:var(--lavande-fonce)}
+.d-non .ic{background:rgba(110,69,192,.13)} .d-non .ic svg{stroke:var(--lavande-fonce)}
+.d-oui{background:var(--rouille);color:#fff}
+.d-oui .ic{background:rgba(255,255,255,.17)} .d-oui .ic svg{stroke:#fff}
+.d-bas{flex:none;padding:12px 16px calc(18px + env(safe-area-inset-bottom,0px));text-align:center}
+.d-passer{background:none;border:none;font-family:var(--sans);font-size:14px;font-weight:600;
+  color:var(--doux);padding:12px 22px;text-decoration:underline;text-underline-offset:4px}
+
+/* ---- marque « douloureuse » dans les releves ---- */
+.mal{font-size:11px;font-weight:700;padding:2px 9px;border-radius:999px;margin-left:8px;
+  white-space:nowrap;color:var(--rouille);background:var(--rouille-voile)}
+.tableau td .mal{margin-left:6px}
+
 /* ---- rythme des contractions : barres sur un axe de temps reel ---- */
 .gc-carte{background:var(--blanc);border:1px solid var(--bord-blanc);border-radius:var(--rc);
   padding:18px 0 14px;box-shadow:var(--ombre);overflow:hidden}
@@ -454,8 +490,6 @@ select{appearance:none;-webkit-appearance:none;background-image:url("data:image/
 
   <section class="vue actif" id="vue-maintenant">
     <div id="alertes" style="display:none"></div>
-    <div class="legende">Rythme des contractions</div>
-    <div class="ruban" id="ruban"></div>
     <div class="disque-zone">
       <button class="disque" id="disque" aria-live="polite">
         <svg class="anneau" viewBox="0 0 200 200" aria-hidden="true">
@@ -562,6 +596,26 @@ select{appearance:none;-webkit-appearance:none;background-image:url("data:image/
     <div class="avert" id="avert-stockage" hidden></div>
     <div class="note-bas">Les mesures sont écrites d'abord sur cet appareil, puis remontées vers la base dès qu'il y a du réseau. Tout fonctionne hors ligne : ce qui n'a pas pu partir est renvoyé à la prochaine connexion.</div>
   </section>
+</div>
+
+<div class="douleur" id="douleur" role="dialog" aria-modal="true" aria-labelledby="d-texte">
+  <div class="d-haut">
+    <div class="d-texte" id="d-texte">Est-ce que la contraction était douloureuse&nbsp;?</div>
+    <div class="d-dur">Durée enregistrée <b id="d-dur">—</b></div>
+  </div>
+  <div class="d-moities">
+    <button type="button" class="d-moitie d-non" data-douleur="non">
+      <span class="ic" aria-hidden="true"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="M8.2 14.4c1 .9 2.3 1.4 3.8 1.4s2.8-.5 3.8-1.4"/><path d="M9 9.6h.01M15 9.6h.01"/></svg></span>
+      <span class="mot">Non</span><span class="aide">supportable</span>
+    </button>
+    <button type="button" class="d-moitie d-oui" data-douleur="oui">
+      <span class="ic" aria-hidden="true"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="M8.2 15.8c1-.9 2.3-1.4 3.8-1.4s2.8.5 3.8 1.4"/><path d="M9 9.6h.01M15 9.6h.01"/></svg></span>
+      <span class="mot">Oui</span><span class="aide">il a fallu souffler</span>
+    </button>
+  </div>
+  <div class="d-bas">
+    <button type="button" class="d-passer" data-douleur="passer">Je ne sais pas — passer</button>
+  </div>
 </div>
 
 <div class="voile" id="voile">
@@ -697,7 +751,10 @@ async function pousser(){
 
   await envoi("sg_contractions", S.contractions.filter(c=>c.sale).map(c=>({ src:c, charge:{
     id:c.id, compte:SESSION.uid, debut:c.debut, secondes:c.secondes,
-    note:c.note||"", supprime:!!c.supprime } })));
+    note:c.note||"", supprime:!!c.supprime,
+    /* null = intensite non renseignee, ce qui est le cas de toutes les
+       contractions anterieures a la question */
+    douleur:(c.douleur === true || c.douleur === false) ? c.douleur : null } })));
 
   await envoi("sg_mesures", S.mesures.filter(m=>m.sale).map(m=>({ src:m, charge:{
     id:m.id, compte:SESSION.uid, type:m.type, at:m.at, v:m.v||{},
@@ -738,7 +795,7 @@ async function tirer(){
     if(!r.ok) throw new Error(t+" "+r.status);
     return r.json();
   };
-  fusionner(S.contractions, await lire("sg_contractions"), ["debut","secondes","note"]);
+  fusionner(S.contractions, await lire("sg_contractions"), ["debut","secondes","note","douleur"]);
   fusionner(S.mesures,      await lire("sg_mesures"),      ["type","at","v","note"]);
 
   const rg = await lire("sg_reglages");
@@ -839,7 +896,8 @@ function tousEvenements(){
   cs.forEach((c,i)=>{
     const d = new Date(c.debut);
     out.push({ id:c.id, type:"contraction", at:d, valeur:dureeCourte(c.secondes), duree:c.secondes,
-      interv: i>0 ? (d - new Date(cs[i-1].debut)) : null, note:c.note||"", alerte:false });
+      interv: i>0 ? (d - new Date(cs[i-1].debut)) : null, note:c.note||"", alerte:false,
+      douleur: (c.douleur === true || c.douleur === false) ? c.douleur : null });
   });
   vivantesM().forEach(m=>{
     out.push({ id:m.id, type:m.type, at:new Date(m.at), valeur:valeurTexte(m),
@@ -878,13 +936,16 @@ let tic = null;
 function basculer(){
   if(S.encours){
     const sec = Math.round((Date.now() - new Date(S.encours))/1000);
+    let nouvelle = null;
     if(sec >= 3){
       const c = { id:uid(), debut:S.encours, secondes:sec, note:"", supprime:false };
       marquer(c); S.contractions.push(c);
+      nouvelle = c;
     }
     S.encours = null;
     clearInterval(tic); tic = null;
     if(navigator.vibrate) navigator.vibrate([30,60,30]);
+    if(nouvelle) setTimeout(()=>ouvrirDouleur(nouvelle), 120);
   }else{
     S.encours = new Date().toISOString();
     tic = setInterval(peindreChrono, 250);
@@ -902,7 +963,6 @@ function peindreChrono(){
     disque.classList.add("encours");
     int.innerHTML = '<div class="chrono">'+duree(sec)+'</div><div class="action">Appuie pour arrêter</div>';
     if(an) an.style.strokeDashoffset = (TOUR*(1 - Math.min(1, sec/90))).toFixed(1);
-    peindreRuban();
   }else{
     disque.classList.remove("encours");
     int.innerHTML = '<div class="repos">Démarrer<br>la contraction</div>';
@@ -911,36 +971,6 @@ function peindreChrono(){
 }
 
 let dernierNb = -1;
-function peindreRuban(){
-  const r = $("#ruban");
-  const cs = vivantes().slice(-10);
-  if(!cs.length && !S.encours){
-    r.innerHTML = '<div class="vide">Le rythme apparaîtra ici dès la première contraction.</div>'; return;
-  }
-  const now = Date.now();
-  let t0 = cs.length ? new Date(cs[0].debut).getTime() : now;
-  if(S.encours) t0 = Math.min(t0, new Date(S.encours).getTime());
-  let span = now - t0;
-  if(span < 10*60000){ t0 = now - 10*60000; span = 10*60000; }
-  span *= 1.03;
-  const maxD = Math.max(90, ...cs.map(c=>c.secondes));
-  let h = '<div class="socle"></div>';
-  const barre = (deb, sec, vive) => {
-    const g = ((deb - t0)/span)*100, w = Math.max(0.9, ((sec*1000)/span)*100);
-    const ht = 8 + Math.min(1, sec/maxD)*40;
-    return '<div class="barre'+(vive?' vive':'')+'" style="left:'+g.toFixed(2)+'%;width:'+w.toFixed(2)+'%;height:'+ht.toFixed(0)+'px"></div>';
-  };
-  cs.forEach(c => h += barre(new Date(c.debut).getTime(), c.secondes, false));
-  if(S.encours){ const d0 = new Date(S.encours).getTime(); h += barre(d0, (now-d0)/1000, true); }
-  h += '<div class="ech g">il y a '+ecart(now-t0)+'</div><div class="ech d">maintenant</div>';
-  r.innerHTML = h;
-  if(cs.length !== dernierNb){
-    dernierNb = cs.length;
-    const bs = r.querySelectorAll(".barre:not(.vive)");
-    const fin = bs[bs.length-1];
-    if(fin) fin.style.animation = "pousse .55s cubic-bezier(.2,1.25,.3,1) both";
-  }
-}
 
 function peindreStats(){
   const cs = vivantes();
@@ -1002,14 +1032,60 @@ function peindreTerme(){
     (g.reste >= 0 ? "J−"+g.reste : "terme +"+(-g.reste)+" j");
 }
 
+/* =====================================================================
+   QUESTION DE DOULEUR — posee a l'arret du chronometre, jamais bloquante.
+   La contraction est deja enregistree quand l'ecran s'ouvre : repondre ne
+   fait qu'ajouter une information, et ne pas repondre n'en retire aucune.
+   ===================================================================== */
+const DELAI_DOULEUR = 20000;      /* fermeture automatique, sans reponse */
+let douleurPour = null, douleurMinuteur = null;
+
+function ouvrirDouleur(c){
+  const el = $("#douleur");
+  if(!el || !c) return;
+  douleurPour = c.id;
+  $("#d-dur").textContent = dureeCourte(c.secondes);
+  el.classList.add("la");
+  clearTimeout(douleurMinuteur);
+  douleurMinuteur = setTimeout(fermerDouleur, DELAI_DOULEUR);
+}
+
+function fermerDouleur(){
+  const el = $("#douleur");
+  if(el) el.classList.remove("la");
+  clearTimeout(douleurMinuteur);
+  douleurMinuteur = null;
+  douleurPour = null;
+}
+
+function repondreDouleur(rep){
+  const id = douleurPour;
+  fermerDouleur();
+  if(!id || rep === "passer") return;          /* sans reponse : reste non renseignee */
+  const c = S.contractions.find(x=>x.id === id);
+  if(!c) return;
+  c.douleur = (rep === "oui");
+  marquer(c);
+  if(navigator.vibrate) navigator.vibrate(18);
+  save(); toutPeindre(); planifier();
+}
+
+document.addEventListener("click", ev=>{
+  const b = ev.target.closest("[data-douleur]");
+  if(b) repondreDouleur(b.dataset.douleur);
+});
+
 /* ============ listes ============ */
 function ligneHTML(e){
   const c = CATS[e.type] || {nom:e.type, coul:"#8A8FA3"};
   const meta = [];
   if(e.interv != null) meta.push("intervalle "+ecart(e.interv));
   if(e.note) meta.push(ech(e.note));
+  /* une contraction douloureuse change de couleur et porte une etiquette */
+  const coul = e.douleur === true ? "var(--rouille)" : c.coul;
+  const marque = e.douleur === true ? '<span class="mal">douloureuse</span>' : "";
   return '<div class="ligne"><div class="h">'+heure(e.at)+'</div><div class="corps">'+
-    '<div class="quoi"><span style="color:'+c.coul+'">'+c.nom+'</span> · <b'+(e.alerte?' class="alerte"':'')+'>'+ech(e.valeur)+'</b></div>'+
+    '<div class="quoi"><span style="color:'+coul+'">'+c.nom+'</span> · <b'+(e.alerte?' class="alerte"':'')+'>'+ech(e.valeur)+'</b>'+marque+'</div>'+
     (meta.length?'<div class="meta">'+meta.join(" · ")+'</div>':'')+
     '</div><button class="sup" data-sup="'+e.id+'" data-t="'+e.type+'" aria-label="Supprimer">×</button></div>';
 }
@@ -1368,7 +1444,8 @@ function peindreRapport(){
   if(!evts.length){ t.innerHTML = ""; return; }
   t.innerHTML = '<thead><tr><th>Date</th><th>Heure</th><th>Catégorie</th><th>Valeur</th><th>Durée</th><th>Intervalle</th><th>Note</th></tr></thead><tbody>'+
     evts.map(e=>'<tr><td class="num">'+dateCourte(e.at)+'</td><td class="num">'+heure(e.at)+'</td><td>'+CATS[e.type].nom+'</td>'+
-      '<td class="num'+(e.alerte?' alerte':'')+'">'+ech(e.valeur)+'</td>'+
+      '<td class="num'+(e.alerte?' alerte':'')+'">'+ech(e.valeur)+
+        (e.douleur === true ? '<span class="mal">douloureuse</span>' : '')+'</td>'+
       '<td class="num">'+(e.duree!=null?dureeCourte(e.duree):"—")+'</td>'+
       '<td class="num">'+(e.interv!=null?ecart(e.interv):"—")+'</td><td>'+ech(e.note||"—")+'</td></tr>').join("")+'</tbody>';
 }
@@ -1389,7 +1466,7 @@ function gcDonnees(){
   const lim = periode ? Date.now() - periode*86400000 : 0;
   return vivantes()
     .filter(c => new Date(c.debut).getTime() >= lim)
-    .map(c => ({ t:new Date(c.debut), s:c.secondes }));
+    .map(c => ({ t:new Date(c.debut), s:c.secondes, mal: c.douleur === true }));
 }
 
 function gcNomJour(d){
@@ -1495,8 +1572,10 @@ function gcTracer(){
   const w = GC_LARG[gcFenetre];
   V.forEach((c,i)=>{
     const ht = c.s/maxd*HB, x = X(M(c.t));
+    /* la douleur prime sur la duree pour la couleur de la barre */
     h += '<div class="gc-bar'+(c.s>=60?" longue":"")+(i===gcSel?" sel":"")+
-         '" style="left:'+(x - w/2).toFixed(1)+'px;width:'+w+'px;height:'+ht.toFixed(0)+'px"></div>';
+         '" style="left:'+(x - w/2).toFixed(1)+'px;width:'+w+'px;height:'+ht.toFixed(0)+'px'+
+         (c.mal && i!==gcSel ? ';background:var(--rouille)' : '')+'"></div>';
     if(i === gcSel)
       h += '<div class="gc-pointe" style="left:'+x.toFixed(1)+'px;bottom:'+(SOL+ht+4).toFixed(0)+'px"></div>';
   });
@@ -1522,6 +1601,7 @@ function gcTracer(){
   document.getElementById("gc-detail").innerHTML =
     '<span class="q">'+gcQuand(c.t)+'</span>'+
     '<span class="v">durée <b>'+dureeCourte(c.s)+'</b></span>'+
+    (c.mal ? '<span class="v" style="color:var(--rouille);font-weight:700">douloureuse</span>' : '')+
     (gcSel > 0 ? '<span class="v">écart <b>'+ecart(c.t - V[gcSel-1].t)+'</b></span>' : '')+
     '<span class="v">'+(gcSel+1)+'<sup>'+(gcSel===0?"re":"e")+'</sup> sur '+V.length+'</span>'+
     (coupe ? '<span class="gc-fond">Le tracé remonte jusqu\'au '+
@@ -1565,6 +1645,7 @@ function peindreGraphContr(){
     '<div class="gc-leg">'+
       '<span><i style="background:var(--lavande)"></i>moins d\'une minute</span>'+
       '<span><i style="background:var(--lavande-fonce)"></i>une minute ou plus</span>'+
+      '<span><i style="background:var(--rouille)"></i>douloureuse</span>'+
     '</div>';
 
   gcRecaler = true;
@@ -1605,9 +1686,10 @@ $("#btn-json").addEventListener("click", ()=>
 
 $("#btn-csv").addEventListener("click", ()=>{
   const q = v => '"'+String(v==null?"":v).replace(/"/g,'""')+'"';
-  const l = [["Date","Heure","Categorie","Valeur","Duree (s)","Intervalle (min)","Note"].map(q).join(";")];
+  const l = [["Date","Heure","Categorie","Valeur","Duree (s)","Intervalle (min)","Douloureuse","Note"].map(q).join(";")];
   tousEvenements().slice().reverse().forEach(e=>l.push([dateCourte(e.at), heure(e.at), CATS[e.type].nom, e.valeur,
-    e.duree!=null?e.duree:"", e.interv!=null?Math.round(e.interv/60000):"", e.note].map(q).join(";")));
+    e.duree!=null?e.duree:"", e.interv!=null?Math.round(e.interv/60000):"",
+    e.douleur === true ? "oui" : e.douleur === false ? "non" : "", e.note].map(q).join(";")));
   telecharger("suivi-grossesse-"+horodatage()+".csv", "\uFEFF"+l.join("\r\n"), "text/csv;charset=utf-8");
 });
 
@@ -1902,6 +1984,32 @@ function peindreAlertes(){
 }
 
 /* ===== Récapitulatif de consultation ===== */
+/* Le modele recevait une liste brute et devait tout reagreger lui-meme :
+   compter les contractions par jour, reperer les tendances, retrouver les
+   extremes. Il s'en acquittait mal et repondait par des generalites. On lui
+   fournit desormais les chiffres deja calcules — ceux que la Synthese affiche
+   a l'ecran — avant le detail, qui reste la pour verification. */
+function contractionsParJour(evts){
+  const par = {};
+  evts.filter(e=>e.type === "contraction").forEach(e=>{
+    const k = jourCle(e.at); (par[k] = par[k] || []).push(e.at);
+  });
+  return Object.keys(par).sort().map(k=>({ jour:k, n:par[k].length }));
+}
+
+/* La frequence horaire est le chiffre qui compte avant terme : on cherche la
+   fenetre d'une heure la plus chargee, sur les debuts de contraction. */
+function pointeHoraire(evts){
+  const t = evts.filter(e=>e.type === "contraction").map(e=>e.at.getTime()).sort((a,b)=>a-b);
+  let mieux = 0, quand = null;
+  for(let i=0;i<t.length;i++){
+    let j = i;
+    while(j < t.length && t[j] - t[i] < 3600000) j++;
+    if(j - i > mieux){ mieux = j - i; quand = t[i]; }
+  }
+  return { n:mieux, debut: quand!=null ? new Date(quand) : null };
+}
+
 function releveTexte(){
   const lim = periode ? Date.now() - periode*86400000 : 0;
   const evts = tousEvenements().filter(e=>e.at.getTime() >= lim);
@@ -1910,12 +2018,51 @@ function releveTexte(){
   const l = [];
   l.push("Contexte : " + (g && g.valide ? g.sa+" SA + "+g.rj+" jours, "+["","1er","2e","3e"][g.trimestre]+" trimestre, terme prévu le "+dateCourte(g.terme) : "terme non renseigné"));
   l.push("Période du relevé : " + (PERIODES.find(p=>p.v===periode)||{l:"?"}).l);
+
+  const compte = {};
+  evts.forEach(e=>{ compte[e.type] = (compte[e.type]||0)+1; });
+  const PLURIEL = { contraction:"contractions", tension:"tensions", poids:"relevés de poids",
+    temperature:"prises de température", glycemie:"glycémies", mouvements:"comptages de mouvements",
+    symptome:"symptômes", biologie:"prises de sang" };
+  l.push("Contenu : " + Object.keys(compte).map(k =>
+    compte[k] + " " + (compte[k] > 1 ? (PLURIEL[k] || CATS[k].nom.toLowerCase()) : CATS[k].nom.toLowerCase())
+  ).join(", ") + ".");
+
+  /* chiffres deja calcules par l'application */
+  const sy = synthese();
+  if(sy){
+    l.push("");
+    l.push("Chiffres calculés par l'application — fiables, à reprendre tels quels :");
+    sy.change.forEach(x=>l.push("- " + x));
+    if(sy.signaler.length){
+      l.push("");
+      l.push("Dépassements repérés par les seuils codés dans l'application :");
+      sy.signaler.forEach(x=>l.push("- " + x));
+    }
+  }
+
+  const pj = contractionsParJour(evts);
+  if(pj.length){
+    l.push("");
+    l.push("Contractions par jour de calendrier :");
+    pj.forEach(x=>l.push("- " + dateCourte(new Date(x.jour+"T12:00:00")) + " : " + x.n));
+    const p = pointeHoraire(evts);
+    if(p.n > 1 && p.debut)
+      l.push("Heure la plus chargée : " + p.n + " contractions en une heure, à partir du " +
+             dateCourte(p.debut) + " " + heure(p.debut) + ".");
+    const derJ = pj[pj.length-1];
+    l.push("Jours du relevé avec au moins une contraction : " + pj.length +
+           " sur " + (periode || Math.max(1, Math.ceil((Date.now() - evts[evts.length-1].at)/86400000))) + ".");
+    l.push("Dernier jour renseigné : " + dateCourte(new Date(derJ.jour+"T12:00:00")) + ", " + derJ.n + " contraction" + (derJ.n>1?"s":"") + ".");
+  }
+
   l.push("");
-  l.push("Mesures, de la plus récente à la plus ancienne :");
+  l.push("Détail, de la plus récente à la plus ancienne :");
   evts.slice(0, 400).forEach(e=>{
     l.push("- " + dateCourte(e.at) + " " + heure(e.at) + " | " + CATS[e.type].nom + " | " + e.valeur +
       (e.duree!=null ? " | durée "+dureeCourte(e.duree) : "") +
       (e.interv!=null ? " | intervalle depuis la précédente "+ecart(e.interv) : "") +
+      (e.douleur === true ? " | douloureuse" : e.douleur === false ? " | non douloureuse" : "") +
       (e.note ? " | note : "+e.note : ""));
   });
   return l.join("\n");
@@ -1967,6 +2114,13 @@ function synthese(){
     change.push(c.length+" contraction"+(c.length>1?"s":"")+" enregistrée"+(c.length>1?"s":"")+
       ", durée moyenne "+dureeCourte(moy(ds))+" (de "+dureeCourte(Math.min(...ds))+" à "+dureeCourte(Math.max(...ds))+")"+
       (ivs.length ? ", intervalle moyen "+ecart(moy(ivs))+" et le plus court "+ecart(Math.min(...ivs)) : "")+".");
+    const mal = c.filter(e=>e.douleur === true).length;
+    const renseignees = c.filter(e=>e.douleur === true || e.douleur === false).length;
+    if(renseignees){
+      change.push(mal+" contraction"+(mal>1?"s":"")+" signalée"+(mal>1?"s":"")+" douloureuse"+(mal>1?"s":"")+
+        " sur "+renseignees+" renseignée"+(renseignees>1?"s":"")+
+        (renseignees < c.length ? " (les "+(c.length-renseignees)+" autres sans indication)" : "")+".");
+    }
     const parJour = {};
     c.forEach(e=>{ const k = jourCle(e.at); parJour[k] = (parJour[k]||0)+1; });
     const jours = Object.keys(parJour).sort();
@@ -2785,12 +2939,12 @@ document.querySelectorAll("nav.barre button").forEach(b=>
 /* ============ démarrage ============ */
 function signature(){
   let s = (S.terme||"")+"~"+(S.prenom||"")+"~"+(S.encours||"")+"~"+(S.ancreDate||"")+"~"+(S.ancreJours==null?"":S.ancreJours);
-  for(const c of S.contractions) s += "|"+c.id+c.secondes+(c.supprime?1:0);
+  for(const c of S.contractions) s += "|"+c.id+c.secondes+(c.supprime?1:0)+(c.douleur===true?"D":c.douleur===false?"d":"");
   for(const m of S.mesures) s += "|"+m.id+(m.maj||"")+(m.supprime?1:0);
   return s;
 }
 function toutPeindre(){
-  peindreChrono(); peindreRuban(); peindreStats(); peindreJour();
+  peindreChrono(); peindreStats(); peindreJour();
   peindreCalendrier(); peindreRapport(); peindreTerme();
   peindreStockage(); peindreSync(); peindreEtatSync(); peindreAlertes();
   peindreBandeau(); peindreGraphiques();
@@ -2811,7 +2965,6 @@ porte(CONFIGURE && !SESSION);
 if(CONFIGURE && SESSION) synchroniser();
 
 setInterval(()=>{ if(document.hidden) return;
-  if(!S.encours) peindreRuban();
   peindreStats(); }, 30000);
 setInterval(()=>{ if(SESSION && !document.hidden) synchroniser(); }, 60000);
 window.addEventListener("online", ()=>{ if(SESSION) synchroniser(); });
@@ -2820,7 +2973,7 @@ document.addEventListener("visibilitychange", ()=>{
   if(document.hidden) return;
   // Rafraichissement leger : rien de ce qui suit ne reconstruit le calendrier
   // ni le rapport, donc plus de scintillement au retour sur l'onglet.
-  peindreChrono(); peindreRuban(); peindreStats(); peindreAlertes(); peindreTerme(); peindreBandeau();
+  peindreChrono(); peindreStats(); peindreAlertes(); peindreTerme(); peindreBandeau();
   if(SESSION) synchroniser();
 });
 
